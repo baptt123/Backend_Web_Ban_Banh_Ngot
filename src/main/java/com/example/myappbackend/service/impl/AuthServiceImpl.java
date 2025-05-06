@@ -6,7 +6,7 @@
 //import com.example.myappbackend.model.Role;
 //import com.example.myappbackend.model.User;
 //import com.example.myappbackend.repository.UserRepository;
-//import com.example.myappbackend.service.AuthService;
+
 //import com.example.myappbackend.service.JwtService;
 //import jakarta.persistence.EntityExistsException;
 //import jakarta.persistence.EntityNotFoundException;

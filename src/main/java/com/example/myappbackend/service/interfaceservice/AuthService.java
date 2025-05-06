@@ -1,4 +1,4 @@
-package com.example.myappbackend.service;
+package com.example.myappbackend.service.interfaceservice;
 
 import com.example.myappbackend.dto.AuthResponse;
 import com.example.myappbackend.dto.LoginRequest;

@@ -1,4 +1,4 @@
-package com.example.myappbackend.service;
+package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.config.PaypalProperties;
 import com.example.myappbackend.model.*;

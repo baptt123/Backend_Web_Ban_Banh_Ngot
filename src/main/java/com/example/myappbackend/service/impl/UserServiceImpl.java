@@ -2,7 +2,7 @@ package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.UserRepository;
-import com.example.myappbackend.service.UserService;
+import com.example.myappbackend.service.interfaceservice.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
