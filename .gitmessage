@@ -1,0 +1,26 @@
+# <type>: <subject>
+# Dòng đầu tiên phải ngắn gọn (tối đa 72 ký tự) và mô tả ngắn về thay đổi.
+#
+# Các type thường dùng:
+# feat     - Thêm tính năng mới
+# fix      - Sửa lỗi
+# docs     - Thay đổi tài liệu
+# style    - Thay đổi định dạng, không ảnh hưởng logic (space, format)
+# refactor - Cải tiến code mà không thay đổi chức năng
+# perf     - Cải thiện hiệu năng
+# test     - Thêm hoặc sửa test
+# chore    - Những thay đổi nhỏ, không ảnh hưởng đến mã nguồn (build, config)
+#
+# Dòng trống
+# Phần mô tả chi tiết hơn nếu cần:
+# - Tại sao có thay đổi này
+# - Ảnh hưởng tới phần nào
+# - Hướng dẫn nếu có breaking changes
+
+# Ví dụ:
+# feat: thêm chức năng đăng nhập bằng Google
+#
+# - Sử dụng OAuth2 để đăng nhập với Google
+# - Thêm nút "Đăng nhập với Google" ở trang Login
+# - Chưa xử lý logout hoàn chỉnh
+

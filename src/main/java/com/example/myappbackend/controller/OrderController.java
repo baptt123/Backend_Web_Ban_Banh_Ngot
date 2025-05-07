@@ -1,7 +1,7 @@
 package com.example.myappbackend.controller;
 
 import com.example.myappbackend.dto.OrderDetailResponse;
-import com.example.myappbackend.service.interfaceservice.OrderDetailService;
+import com.example.myappbackend.service.interfaceservice.OrderService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -10,10 +10,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
+    private final OrderService orderDetailService;
 
-    private final OrderDetailService orderDetailService;
-
-    public OrderController(OrderDetailService orderDetailService) {
+    public OrderController(OrderService orderDetailService) {
         this.orderDetailService = orderDetailService;
     }
 
