@@ -17,7 +17,7 @@ public class Reports {
 
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    private Stores store;
 
     @Column(name = "total_revenue", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalRevenue;

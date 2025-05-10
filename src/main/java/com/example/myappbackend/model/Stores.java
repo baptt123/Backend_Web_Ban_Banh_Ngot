@@ -1,5 +1,6 @@
-package com.example.tmdt.model;
+package com.example.myappbackend.model;
 
+import com.example.myappbackend.model.User;
 import jakarta.persistence.*;
 import lombok.Data;
 

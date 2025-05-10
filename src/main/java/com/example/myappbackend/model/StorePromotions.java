@@ -15,7 +15,7 @@ public class StorePromotions {
 
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false)
-    private com.example.tmdt.model.Stores store;
+    private Stores store;
 
     @ManyToOne
     @JoinColumn(name = "promotion_id", nullable = false)

@@ -20,7 +20,7 @@ public class Comment {
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private Product product;
+    private Products product;
 
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;

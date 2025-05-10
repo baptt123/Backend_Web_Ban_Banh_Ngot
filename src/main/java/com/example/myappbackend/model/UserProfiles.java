@@ -1,7 +1,8 @@
-package com.example.tmdt.model;
+package com.example.myappbackend.model;
 
 import com.example.myappbackend.model.User;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "user_profiles")
 @Data
+
 public class UserProfiles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

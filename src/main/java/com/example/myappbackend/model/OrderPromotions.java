@@ -18,5 +18,5 @@ public class OrderPromotions {
 
     @ManyToOne
     @JoinColumn(name = "promotion_id", nullable = false)
-    private Promotion promotion;
+    private Promotions promotion;
 }

@@ -21,7 +21,7 @@ public class Orders {
 
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    private Stores store;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
@@ -40,11 +40,5 @@ public class Orders {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public enum OrderStatus {
-        PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELED
-    }
 
-    public enum PaymentMethod {
-        COD, ONLINE
-    }
 }
