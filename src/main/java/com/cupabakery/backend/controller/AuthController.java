@@ -3,6 +3,7 @@ package com.cupabakery.backend.controller;
 import com.cupabakery.backend.model.request.LoginRequest;
 import com.cupabakery.backend.model.request.RegisterRequest;
 import com.cupabakery.backend.dto.UserDTO;
+import com.cupabakery.backend.model.request.ResetPasswordRequest;
 import com.cupabakery.backend.service.UserService;
 import com.cupabakery.backend.service.VerificationService;
 import com.cupabakery.backend.service.JwtService;
@@ -106,8 +107,8 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
-        userService.resetPassword(token, newPassword);
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
     }
 }
