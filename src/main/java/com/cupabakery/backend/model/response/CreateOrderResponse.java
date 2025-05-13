@@ -1,5 +1,6 @@
-package com.cupabakery.backend.model;
+package com.cupabakery.backend.model.response;
 
+import com.cupabakery.backend.model.Link;
 import lombok.Data;
 
 import java.util.List;

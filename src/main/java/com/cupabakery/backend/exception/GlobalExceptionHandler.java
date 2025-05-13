@@ -1,6 +1,6 @@
 package com.cupabakery.backend.exception;
 
-import com.cupabakery.backend.model.ErrorResponse;
+import com.cupabakery.backend.model.response.ErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -74,7 +74,6 @@ public class GlobalExceptionHandler {
 
     /**
      * Handler cho DataIntegrityViolationException (lỗi ràng buộc DB)
-     * Vẫn cần giữ lại vì có thể có lỗi DB không được xử lý trước đó
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex) {

@@ -3,6 +3,7 @@ package com.cupabakery.backend.model;
 import jakarta.persistence.*;
 // Lombok auto generator ....
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 // Working with local date time
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "users")
 public class User {
@@ -37,6 +39,9 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+
+    @Column(name="active", nullable = false)
+    private boolean active;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

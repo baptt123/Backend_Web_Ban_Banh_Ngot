@@ -1,5 +1,6 @@
-package com.cupabakery.backend.model;
+package com.cupabakery.backend.model.request;
 
+import com.cupabakery.backend.model.PurchaseUnit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

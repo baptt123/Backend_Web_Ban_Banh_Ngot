@@ -1,4 +1,4 @@
-package com.cupabakery.backend.dto;
+package com.cupabakery.backend.model.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,12 +9,12 @@ import lombok.Data;
 @Data
 /*
  * Data transfer object for user register, validate the input data before --> Controller
- * 1. User submit -> formData -> Controller -> RegisterDTO check anotation
- * 2. RegisterDTO validate the formData
+ * 1. User submit -> formData -> Controller -> RegisterRequest check anotation
+ * 2. RegisterRequest validate the formData
  *    2.1 Valid data --> Controller
  *    2.2 Invalid data --> Throw error
 */
-public class RegisterDTO {
+public class RegisterRequest {
 
     @NotBlank(message = "Username không được để trống")
     @Size(min = 3, max = 20, message = "Username phải có từ 3 đến 20 ký tự")

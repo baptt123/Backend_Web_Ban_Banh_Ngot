@@ -1,5 +1,9 @@
-package com.cupabakery.backend.model;
+package com.cupabakery.backend.model.response;
 
+import com.cupabakery.backend.model.Link;
+import com.cupabakery.backend.model.Payer;
+import com.cupabakery.backend.model.PaymentSource;
+import com.cupabakery.backend.model.PurchaseUnit;
 import lombok.Data;
 
 import java.util.List;
