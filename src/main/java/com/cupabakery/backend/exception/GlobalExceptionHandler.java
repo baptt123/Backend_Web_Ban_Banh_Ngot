@@ -1,6 +1,11 @@
 package com.cupabakery.backend.exception;
 
 import com.cupabakery.backend.model.response.ErrorResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -143,5 +148,36 @@ public class GlobalExceptionHandler {
         } else {
             return new ErrorResponse(status, code, message);
         }
+    }
+
+    /**
+     * Handler JWT exception
+     */
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex) {
+        String errorCode = "JWT_ERROR";
+        String message = "Lỗi xác thực token";
+
+        if (ex instanceof ExpiredJwtException) {
+            errorCode = "JWT_EXPIRED";
+            message = "Token JWT đã hết hạn";
+        } else if (ex instanceof MalformedJwtException) {
+            errorCode = "JWT_MALFORMED";
+            message = "Token JWT không hợp lệ";
+        } else if (ex instanceof UnsupportedJwtException) {
+            errorCode = "JWT_UNSUPPORTED";
+            message = "Token JWT không được hỗ trợ";
+        } else if (ex instanceof SignatureException) {
+            errorCode = "JWT_SIGNATURE_INVALID";
+            message = "Chữ ký JWT không hợp lệ";
+        }
+
+        ErrorResponse errorResponse = createErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                errorCode,
+                message,
+                ex
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 }

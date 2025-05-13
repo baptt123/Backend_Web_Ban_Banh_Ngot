@@ -15,7 +15,6 @@ import lombok.Data;
  *    2.2 Invalid data --> Throw error
 */
 public class RegisterRequest {
-
     @NotBlank(message = "Username không được để trống")
     @Size(min = 3, max = 20, message = "Username phải có từ 3 đến 20 ký tự")
     private String username;
