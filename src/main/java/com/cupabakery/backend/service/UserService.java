@@ -1,5 +1,6 @@
 package com.cupabakery.backend.service;
 
+import com.cupabakery.backend.model.ResetPasswordToken;
 import com.cupabakery.backend.model.VerificationToken;
 import com.cupabakery.backend.model.request.RegisterRequest;
 import com.cupabakery.backend.dto.RoleDTO;
@@ -7,10 +8,13 @@ import com.cupabakery.backend.dto.UserDTO;
 import com.cupabakery.backend.exception.BusinessException;
 import com.cupabakery.backend.model.Role;
 import com.cupabakery.backend.model.User;
+import com.cupabakery.backend.repository.ResetPasswordTokenRepository;
 import com.cupabakery.backend.repository.RoleRepository;
 import com.cupabakery.backend.repository.UserRepository;
 import com.cupabakery.backend.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,28 +26,33 @@ import java.util.UUID;
  * Service - Business logic related to User
  * Controller -> Service -> Repository (Model Layer in Express.js)
  * @Transactional make sure if you have error -> throw error to client and stop process
-*/
+ */
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final VerificationTokenRepository tokenRepository;
+    private final ResetPasswordTokenRepository resetPasswordTokenRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository,
+            VerificationTokenRepository tokenRepository,
+            ResetPasswordTokenRepository resetPasswordTokenRepository,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
+        this.tokenRepository = tokenRepository;
+        this.resetPasswordTokenRepository = resetPasswordTokenRepository;
+        this.emailService = emailService;
     }
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private VerificationTokenRepository tokenRepository;
-
-    @Autowired
-    private EmailService emailService;
 
     @Transactional
     public UserDTO registerUser(RegisterRequest registerRequest) {
@@ -86,10 +95,10 @@ public class UserService {
         // Send verification email
         String token = UUID.randomUUID().toString();
         VerificationToken verificationToken = VerificationToken.builder()
-                                            .token(token)
-                                            .user(savedUser)
-                                            .expiryDate(LocalDateTime.now().plusHours(24))
-                                            .build();
+                .token(token)
+                .user(savedUser)
+                .expiryDate(LocalDateTime.now().plusHours(24))
+                .build();
         tokenRepository.save(verificationToken);
         emailService.sendVerificationEmail(savedUser, token);
 
@@ -112,5 +121,44 @@ public class UserService {
                                 .build()
                 )
                 .build();
+    }
+
+    @Transactional
+    public void createPasswordResetToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy email: " + email));
+
+        // Xóa token cũ nếu có
+        resetPasswordTokenRepository.deleteByUser(user);
+
+        String token = UUID.randomUUID().toString();
+
+        ResetPasswordToken resetToken = ResetPasswordToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusHours(1))
+                .build();
+
+        resetPasswordTokenRepository.save(resetToken);
+        emailService.sendResetPasswordEmail(user, token);
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        ResetPasswordToken resetToken = resetPasswordTokenRepository.findByToken(token)
+                .orElseThrow(() -> BusinessException.badRequest(
+                        "Token không hợp lệ hoặc đã hết hạn",
+                        "INVALID_TOKEN"
+                ));
+
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw BusinessException.badRequest("Token hết hạn", "TOKEN_EXPIRED");
+        }
+
+        User user = resetToken.getUser();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetPasswordTokenRepository.delete(resetToken);
     }
 }

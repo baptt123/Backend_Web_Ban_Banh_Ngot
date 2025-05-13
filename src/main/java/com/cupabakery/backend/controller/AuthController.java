@@ -98,4 +98,16 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(Map.of("message", "Đăng xuất thành công"));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        userService.createPasswordResetToken(email);
+        return ResponseEntity.ok("Email đặt lại mật khẩu đã được gửi.");
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        userService.resetPassword(token, newPassword);
+        return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
+    }
 }
