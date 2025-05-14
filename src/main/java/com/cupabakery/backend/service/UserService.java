@@ -2,7 +2,7 @@ package com.cupabakery.backend.service;
 
 import com.cupabakery.backend.model.ResetPasswordToken;
 import com.cupabakery.backend.model.VerificationToken;
-import com.cupabakery.backend.model.request.RegisterRequest;
+import com.cupabakery.backend.dto.request.RegisterRequest;
 import com.cupabakery.backend.dto.RoleDTO;
 import com.cupabakery.backend.dto.UserDTO;
 import com.cupabakery.backend.exception.BusinessException;
@@ -13,7 +13,6 @@ import com.cupabakery.backend.repository.RoleRepository;
 import com.cupabakery.backend.repository.UserRepository;
 import com.cupabakery.backend.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -107,13 +106,14 @@ public class UserService {
     }
 
     // To create User DTO without sensitive information like (password, ...) == pickUser() Express
-    private UserDTO convertToDTO(User user) {
+    public UserDTO convertToDTO(User user) {
         return UserDTO.builder()
                 .userId(user.getUserId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .createdAt(user.getCreatedAt())
+                .active(user.isActive())
                 .role(
                         RoleDTO.builder()
                                 .id(user.getRole().getId())

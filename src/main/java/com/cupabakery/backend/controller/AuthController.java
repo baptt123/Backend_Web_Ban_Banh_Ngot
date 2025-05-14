@@ -1,13 +1,14 @@
 package com.cupabakery.backend.controller;
 
-import com.cupabakery.backend.model.request.LoginRequest;
-import com.cupabakery.backend.model.request.RegisterRequest;
+import com.cupabakery.backend.dto.request.LoginRequest;
+import com.cupabakery.backend.dto.request.RegisterRequest;
 import com.cupabakery.backend.dto.UserDTO;
-import com.cupabakery.backend.model.request.ResetPasswordRequest;
+import com.cupabakery.backend.dto.request.ResetPasswordRequest;
+import com.cupabakery.backend.model.User;
+import com.cupabakery.backend.repository.UserRepository;
 import com.cupabakery.backend.service.UserService;
 import com.cupabakery.backend.service.VerificationService;
 import com.cupabakery.backend.service.JwtService;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +17,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -29,6 +34,7 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final VerificationService verificationService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -38,10 +44,12 @@ public class AuthController {
 
     @Autowired
     public AuthController(UserService userService,
+                          UserRepository userRepository,
                           VerificationService verificationService,
                           AuthenticationManager authenticationManager,
                           JwtService jwtService) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.verificationService = verificationService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
@@ -64,30 +72,70 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
+        try {
+            // Lấy user từ database trước
+            User user = userRepository.findByUsername(loginRequest.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
+            // Debug log
+            System.out.println("Username: " + user.getUsername() + ", Active: " + user.isActive() +
+                    ", Active raw value: " + (user.isActive() ? 1 : 0));
 
-        ResponseCookie jwtCookie = ResponseCookie.from("access_token", token)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(jwtExpiration)
-                .sameSite("none")
-                .build();
+            // Kiểm tra trạng thái active một cách rõ ràng
+            if (!user.isActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(
+                                "message", "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực tài khoản.",
+                                "errorCode", "ACCOUNT_NOT_ACTIVATED"
+                        ));
+            }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(Map.of("message", "Đăng nhập thành công"));
+            // Tiếp tục xác thực
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
+
+            UserDTO userDTO = userService.convertToDTO(user);
+
+            ResponseCookie jwtCookie = ResponseCookie.from("access_token", token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(jwtExpiration)
+                    .sameSite("none")
+                    .build();
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("message", "Đăng nhập thành công");
+            responseBody.put("user", userDTO);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(responseBody);
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "message", "Tên đăng nhập hoặc mật khẩu không đúng",
+                            "errorCode", "INVALID_CREDENTIALS"
+                    ));
+        } catch (DisabledException e) {
+            // Lỗi này có thể xảy ra từ Spring Security nếu tài khoản bị vô hiệu hóa
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of(
+                            "message", "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực tài khoản.",
+                            "errorCode", "ACCOUNT_NOT_ACTIVATED"
+                    ));
+        }
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         // Clear cookie via set maxAge = 0
-        ResponseCookie jwtCookie = ResponseCookie.from("jwt", "")
+        ResponseCookie jwtCookie = ResponseCookie.from("access_token", "")
                 .httpOnly(true)
                 .secure(true)
                 .path("/")

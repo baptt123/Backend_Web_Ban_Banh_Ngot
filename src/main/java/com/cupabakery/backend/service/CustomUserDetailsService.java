@@ -15,7 +15,6 @@ import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-
     private final UserRepository userRepository;
 
     @Autowired
@@ -32,16 +31,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
 
-        // Return UserDetails to Spring Security
+        // Return UserDetails to Spring Security with active status from database
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                true,              // enabled
-                true,              // accountNonExpired
-                true,              // credentialsNonExpired
-                true,              // accountNonLocked
+                user.isActive(), // enabled status from database
+                true, // accountNonExpired
+                true, // credentialsNonExpired
+                true, // accountNonLocked
                 authorities
         );
     }
 }
-

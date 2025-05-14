@@ -2,10 +2,10 @@ package com.cupabakery.backend.service;
 
 import com.cupabakery.backend.config.PaypalProperties;
 import com.cupabakery.backend.model.*;
-import com.cupabakery.backend.model.request.CreateOrderRequest;
-import com.cupabakery.backend.model.response.AuthResponse;
-import com.cupabakery.backend.model.response.CaptureOrderResponse;
-import com.cupabakery.backend.model.response.CreateOrderResponse;
+import com.cupabakery.backend.dto.request.CreateOrderRequest;
+import com.cupabakery.backend.dto.response.AuthResponse;
+import com.cupabakery.backend.dto.response.CaptureOrderResponse;
+import com.cupabakery.backend.dto.response.CreateOrderResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;

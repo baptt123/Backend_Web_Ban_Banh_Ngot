@@ -1,4 +1,4 @@
-package com.cupabakery.backend.model.request;
+package com.cupabakery.backend.dto.request;
 
 import com.cupabakery.backend.model.PurchaseUnit;
 import lombok.AllArgsConstructor;

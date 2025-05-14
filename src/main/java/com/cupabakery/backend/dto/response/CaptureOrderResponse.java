@@ -1,4 +1,4 @@
-package com.cupabakery.backend.model.response;
+package com.cupabakery.backend.dto.response;
 
 import com.cupabakery.backend.model.Link;
 import com.cupabakery.backend.model.Payer;

@@ -1,4 +1,4 @@
-package com.cupabakery.backend.model.response;
+package com.cupabakery.backend.dto.response;
 
 import lombok.Data;
 

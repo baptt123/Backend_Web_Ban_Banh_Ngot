@@ -1,6 +1,6 @@
 package com.cupabakery.backend.exception;
 
-import com.cupabakery.backend.model.response.ErrorResponse;
+import com.cupabakery.backend.dto.response.ErrorResponse;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.MalformedJwtException;
