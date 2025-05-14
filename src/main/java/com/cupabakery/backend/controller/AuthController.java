@@ -1,14 +1,13 @@
 package com.cupabakery.backend.controller;
 
 import com.cupabakery.backend.dto.request.LoginRequest;
+import com.cupabakery.backend.dto.request.GoogleLoginRequest;
 import com.cupabakery.backend.dto.request.RegisterRequest;
 import com.cupabakery.backend.dto.UserDTO;
 import com.cupabakery.backend.dto.request.ResetPasswordRequest;
 import com.cupabakery.backend.model.User;
 import com.cupabakery.backend.repository.UserRepository;
-import com.cupabakery.backend.service.UserService;
-import com.cupabakery.backend.service.VerificationService;
-import com.cupabakery.backend.service.JwtService;
+import com.cupabakery.backend.service.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +37,8 @@ public class AuthController {
     private final VerificationService verificationService;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final GoogleAuthService googleAuthService;
+    private final CustomUserDetailsService userDetailsService;
 
     @Value("${jwt.expiration:3600}")
     private long jwtExpiration;
@@ -47,12 +48,16 @@ public class AuthController {
                           UserRepository userRepository,
                           VerificationService verificationService,
                           AuthenticationManager authenticationManager,
-                          JwtService jwtService) {
+                          JwtService jwtService,
+                          GoogleAuthService googleAuthService,
+                          CustomUserDetailsService userDetailsService) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.verificationService = verificationService;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.googleAuthService = googleAuthService;
+        this.userDetailsService = userDetailsService;
     }
 
     @PostMapping("/register")
@@ -73,15 +78,9 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            // Lấy user từ database trước
             User user = userRepository.findByUsername(loginRequest.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
 
-            // Debug log
-            System.out.println("Username: " + user.getUsername() + ", Active: " + user.isActive() +
-                    ", Active raw value: " + (user.isActive() ? 1 : 0));
-
-            // Kiểm tra trạng thái active một cách rõ ràng
             if (!user.isActive()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body(Map.of(
@@ -90,7 +89,6 @@ public class AuthController {
                         ));
             }
 
-            // Tiếp tục xác thực
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
@@ -131,6 +129,37 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/google-login")
+    public ResponseEntity<?> googleLogin(@Valid @RequestBody GoogleLoginRequest request) {
+        try {
+            User user = googleAuthService.processGoogleLogin(request.getToken());
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+            String token = jwtService.generateToken(userDetails);
+
+            ResponseCookie jwtCookie = ResponseCookie.from("access_token", token)
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(jwtExpiration)
+                    .sameSite("none")
+                    .build();
+
+            Map<String, Object> responseBody = new HashMap<>();
+            responseBody.put("message", "Đăng nhập thành công");
+            responseBody.put("user", userService.convertToDTO(user));
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                    .body(responseBody);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "message", "Đăng nhập Google thất bại: " + e.getMessage(),
+                            "errorCode", "GOOGLE_LOGIN_FAILED"
+                    ));
+        }
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {

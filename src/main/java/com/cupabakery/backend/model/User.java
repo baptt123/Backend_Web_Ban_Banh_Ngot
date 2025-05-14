@@ -23,6 +23,9 @@ public class User {
     @Column(name = "user_id")
     private Integer userId;
 
+    @Column(name = "google_id")
+    private String googleId;
+
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
