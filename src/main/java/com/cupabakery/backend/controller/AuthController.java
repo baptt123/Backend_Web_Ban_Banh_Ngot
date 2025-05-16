@@ -120,7 +120,6 @@ public class AuthController {
                             "errorCode", "INVALID_CREDENTIALS"
                     ));
         } catch (DisabledException e) {
-            // Lỗi này có thể xảy ra từ Spring Security nếu tài khoản bị vô hiệu hóa
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of(
                             "message", "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực tài khoản.",

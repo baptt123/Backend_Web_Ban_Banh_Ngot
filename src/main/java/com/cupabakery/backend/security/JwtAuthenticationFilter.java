@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String username = claims.getSubject();
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Lấy roles từ JWT
+                // Get role from JWT
                 List<String> roles = claims.get("roles", List.class);
                 List<SimpleGrantedAuthority> authorities = new ArrayList<>();
 
