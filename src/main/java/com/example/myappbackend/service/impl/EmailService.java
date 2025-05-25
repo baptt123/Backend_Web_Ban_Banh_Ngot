@@ -1,4 +1,4 @@
-package com.example.myappbackend.service;
+package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.model.User;
 import org.springframework.beans.factory.annotation.Autowired;

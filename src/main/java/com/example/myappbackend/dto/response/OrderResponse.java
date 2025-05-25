@@ -1,4 +1,4 @@
-package com.example.myappbackend.dto;
+package com.example.myappbackend.dto.response;
 
 import lombok.Data;
 

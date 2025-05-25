@@ -1,4 +1,4 @@
-package com.example.tmdt.model;
+package com.example.myappbackend.model;
 
 import com.example.myappbackend.model.Products;
 import com.example.myappbackend.model.User;

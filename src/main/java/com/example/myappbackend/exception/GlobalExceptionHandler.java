@@ -246,4 +246,5 @@ public class GlobalExceptionHandler {
             return new ErrorResponse(status, code, message);
         }
     }
+
 }

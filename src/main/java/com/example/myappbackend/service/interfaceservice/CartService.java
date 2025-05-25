@@ -1,13 +1,10 @@
 package com.example.myappbackend.service.interfaceservice;
 
-import com.example.myappbackend.dto.CartItemRequest;
-import com.example.myappbackend.dto.CartItemResponse;
+import com.example.myappbackend.dto.response.CartItemResponse;
 
 import java.util.List;
 
 public interface CartService {
-    void addToCart(CartItemRequest request);
-    void removeFromCart(Integer productId);
-    List<CartItemResponse> getCartItems();
-    void clearCart();
+    CartItemResponse getProductById(Integer productId);
+    List<CartItemResponse> getCartItemsByIds(List<Integer> productIds);
 }

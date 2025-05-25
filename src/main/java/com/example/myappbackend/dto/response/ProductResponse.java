@@ -1,16 +1,16 @@
-package com.example.myappbackend.dto;
+package com.example.myappbackend.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
-@AllArgsConstructor
-public class CartItemResponse {
+public class ProductResponse {
     private Integer productId;
     private String name;
+    private String description;
     private BigDecimal price;
-    private Integer quantity;
+    private Integer stock;
     private String imageUrl;
+    private String categoryName;
 }

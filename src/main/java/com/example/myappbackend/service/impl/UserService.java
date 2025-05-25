@@ -1,10 +1,10 @@
-package com.example.myappbackend.service;
+package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.model.ResetPasswordToken;
 import com.example.myappbackend.model.VerificationToken;
 import com.example.myappbackend.dto.request.RegisterRequest;
-import com.example.myappbackend.dto.RoleDTO;
-import com.example.myappbackend.dto.UserDTO;
+import com.example.myappbackend.dto.DTO.RoleDTO;
+import com.example.myappbackend.dto.DTO.UserDTO;
 import com.example.myappbackend.exception.BusinessException;
 import com.example.myappbackend.model.Role;
 import com.example.myappbackend.model.User;

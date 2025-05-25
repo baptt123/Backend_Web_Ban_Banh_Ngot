@@ -1,6 +1,6 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.service.PaypalService;
+import com.example.myappbackend.service.impl.PaypalService;
 import com.example.myappbackend.service.impl.ExchangeRateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

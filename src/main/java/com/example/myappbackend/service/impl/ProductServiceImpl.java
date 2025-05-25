@@ -1,5 +1,7 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.Products;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.service.interfaceservice.ProductService;
@@ -8,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -45,7 +48,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Products> getAllProducts() {
-        return productRepository.findAll();
+    public List<ProductResponse> getAllProducts() {
+        try {
+            List<Products> products = productRepository.findAll();
+            return products.stream().map(product -> {
+                ProductResponse dto = new ProductResponse();
+                dto.setProductId(product.getProductId());
+                dto.setName(product.getName());
+                dto.setDescription(product.getDescription());
+                dto.setPrice(product.getPrice());
+                dto.setStock(product.getStock());
+                dto.setImageUrl(product.getImageUrl());
+                dto.setCategoryName(product.getCategory().getName());
+                return dto;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Lỗi khi lấy danh sách sản phẩm.");
+        }
     }
+
 }

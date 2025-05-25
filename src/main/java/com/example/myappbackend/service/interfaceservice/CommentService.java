@@ -1,11 +1,14 @@
 package com.example.myappbackend.service.interfaceservice;
 
-import com.example.myappbackend.dto.CommentRequest;
-import com.example.myappbackend.dto.CommentResponse;
+
+
+import com.example.myappbackend.dto.request.CommentRequest;
+import com.example.myappbackend.dto.response.CommentResponse;
 
 import java.util.List;
 
 public interface CommentService {
-    CommentResponse addComment(CommentRequest dto);
-    List<CommentResponse> getCommentsByProductId(Integer productId);
+    CommentResponse createComment(CommentRequest request);
+    List<CommentResponse> getAllComments();
+    void deleteComment(Integer id);
 }

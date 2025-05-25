@@ -2,21 +2,16 @@ package com.example.myappbackend.config;
 
 
 //import com.example.myappbackend.security.JwtAuthenticationFilter;
+
 import com.example.myappbackend.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 
-import com.example.myappbackend.security.JwtAuthenticationFilter;
-import com.example.myappbackend.service.CustomUserDetailsService;
+import com.example.myappbackend.service.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -27,11 +22,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-
-
-
-
 
 
 import org.springframework.web.cors.CorsConfiguration;
@@ -61,8 +51,6 @@ public class SecurityConfig {
     }
 
 
-
-
     // User authentication provider
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -78,10 +66,10 @@ public class SecurityConfig {
     }
 
     /*
-    * Disable CSRF (Cross-Site Request Forgery)
-    * Config api call permission
-    * Stateless for API RESTful/JWT (Don't create HTTP section, request base on payload)
-    */
+     * Disable CSRF (Cross-Site Request Forgery)
+     * Config api call permission
+     * Stateless for API RESTful/JWT (Don't create HTTP section, request base on payload)
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -89,9 +77,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
-                            // Example role check api
-                            .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                            .anyRequest().authenticated()
+                                // Example role check api
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/comments/**").permitAll()
+                                .requestMatchers("/api/ratings/**").permitAll()
+                                .requestMatchers("/api/products/getproducts").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -103,10 +94,10 @@ public class SecurityConfig {
     }
 
     /*
-    * Allow request from frontend (localhost:5173, ...)
-    * Allow method GET, POST, PUT, DELETE
-    * Allow cookie/credentials via CORS (JWT cookie, ...)
-    */
+     * Allow request from frontend (localhost:5173, ...)
+     * Allow method GET, POST, PUT, DELETE
+     * Allow cookie/credentials via CORS (JWT cookie, ...)
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

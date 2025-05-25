@@ -1,5 +1,6 @@
 package com.example.myappbackend.service.interfaceservice;
 
+import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.model.Products;
 
 import java.util.List;
@@ -10,5 +11,5 @@ public interface ProductService {
     Products updateProduct(Integer id, Products product);
     void deleteProduct(Integer id);
     Optional<Products> getProductById(Integer id);
-    List<Products> getAllProducts();
+    List<ProductResponse> getAllProducts();
 }

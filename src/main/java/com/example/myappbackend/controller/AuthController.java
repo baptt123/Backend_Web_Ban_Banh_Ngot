@@ -1,13 +1,14 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.dto.request.LoginRequest;
+
 import com.example.myappbackend.dto.request.GoogleLoginRequest;
 import com.example.myappbackend.dto.request.RegisterRequest;
-import com.example.myappbackend.dto.UserDTO;
+import com.example.myappbackend.dto.DTO.UserDTO;
+import com.example.myappbackend.dto.request.LoginRequest;
 import com.example.myappbackend.dto.request.ResetPasswordRequest;
 import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.UserRepository;
-import com.example.myappbackend.service.*;
+import com.example.myappbackend.service.impl.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -186,6 +187,5 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
-
     }
 }

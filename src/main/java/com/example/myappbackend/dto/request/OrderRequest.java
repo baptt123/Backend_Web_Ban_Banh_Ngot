@@ -1,8 +1,7 @@
-package com.example.myappbackend.dto;
+package com.example.myappbackend.dto.request;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data

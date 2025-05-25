@@ -1,6 +1,5 @@
 package com.example.myappbackend.model;
 
-import com.example.myappbackend.model.Roles;
 import jakarta.persistence.*;
 // Lombok auto generator ....
 import lombok.AllArgsConstructor;
@@ -42,8 +41,7 @@ public class User {
     // Role set
     @ManyToOne
     @JoinColumn(name = "role_id", nullable = false)
-    private Roles role;
-
+    private Role role;
     @Column(name="active", nullable = false)
     private boolean active;
 

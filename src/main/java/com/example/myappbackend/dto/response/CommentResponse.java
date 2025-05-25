@@ -1,15 +1,14 @@
-package com.example.myappbackend.dto;
+package com.example.myappbackend.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-@AllArgsConstructor
+
 @Data
 public class CommentResponse {
     private Integer id;
-    private String username;
     private String content;
+    private String userName;
+    private Integer productId;
     private LocalDateTime createdAt;
-
 }

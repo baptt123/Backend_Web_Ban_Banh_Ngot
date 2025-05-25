@@ -1,7 +1,7 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.dto.OrderRequest;
-import com.example.myappbackend.dto.OrderResponse;
+import com.example.myappbackend.dto.request.OrderRequest;
+import com.example.myappbackend.dto.response.OrderResponse;
 import com.example.myappbackend.exception.OrderNotCreateException;
 import com.example.myappbackend.service.interfaceservice.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
