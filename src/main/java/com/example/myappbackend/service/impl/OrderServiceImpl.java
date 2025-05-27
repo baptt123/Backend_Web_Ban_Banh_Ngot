@@ -1,6 +1,8 @@
 package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.dto.request.OrderRequest;
+import com.example.myappbackend.dto.response.OrderHistoryDetailResponse;
+import com.example.myappbackend.dto.response.OrderHistoryResponse;
 import com.example.myappbackend.dto.response.OrderResponse;
 import com.example.myappbackend.exception.OrderNotCreateException;
 import com.example.myappbackend.model.*;
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -101,4 +104,33 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    @Override
+    public List<OrderHistoryResponse> getAllOrders() {
+        List<Orders> orders = ordersRepository.findAll();
+
+        return orders.stream().map(order -> {
+            OrderHistoryResponse response = new OrderHistoryResponse();
+            response.setOrderId(order.getOrderId());
+            response.setStoreName(order.getStore().getName());
+            response.setTotalAmount(order.getTotalAmount());
+            response.setStatus(order.getStatus().name());
+            response.setPaymentMethod(order.getPaymentMethod().name());
+            response.setCreatedAt(order.getCreatedAt());
+            response.setUpdatedAt(order.getUpdatedAt());
+
+            List<OrderDetails> orderDetails = orderDetailsRepository.findByOrder(order);
+            List<OrderHistoryDetailResponse> detailResponses = orderDetails.stream().map(detail -> {
+                OrderHistoryDetailResponse d = new OrderHistoryDetailResponse();
+                d.setProductName(detail.getProduct().getName());
+                d.setQuantity(detail.getQuantity());
+                d.setPrice(detail.getPrice());
+                d.setCustomization(detail.getCustomization());
+                return d;
+            }).collect(Collectors.toList());
+
+            response.setOrderDetails(detailResponses);
+
+            return response;
+        }).collect(Collectors.toList());
+    }
 }
