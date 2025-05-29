@@ -1,5 +1,6 @@
-package com.example.myappbackend.model;
+package com.example.myappbackend.dto.request;
 
+import com.example.myappbackend.model.PurchaseUnit;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

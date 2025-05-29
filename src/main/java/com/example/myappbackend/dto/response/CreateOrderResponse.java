@@ -1,5 +1,6 @@
-package com.example.myappbackend.model;
+package com.example.myappbackend.dto.response;
 
+import com.example.myappbackend.model.Link;
 import lombok.Data;
 
 import java.util.List;

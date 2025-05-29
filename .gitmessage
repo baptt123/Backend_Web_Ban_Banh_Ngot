@@ -1,0 +1,12 @@
+
+# Các type thường dùng:
+# feat     - Thêm tính năng mới
+# fix      - Sửa lỗi
+# docs     - Thay đổi tài liệu
+# style    - Thay đổi định dạng, không ảnh hưởng logic (space, format)
+# refactor - Cải tiến code mà không thay đổi chức năng
+# perf     - Cải thiện hiệu năng
+# test     - Thêm hoặc sửa test
+# chore    - Những thay đổi nhỏ, không ảnh hưởng đến mã nguồn (build, config)
+
+
