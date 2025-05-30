@@ -4,6 +4,7 @@ package com.example.myappbackend.config;
 //import com.example.myappbackend.security.JwtAuthenticationFilter;
 
 import com.example.myappbackend.security.JwtAuthenticationFilter;
+import com.example.myappbackend.service.customservice.CustomUserDetailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,11 +38,13 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailService customUserDetailService;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailService customUserDetailService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.customUserDetailService = customUserDetailService;
     }
 
 
