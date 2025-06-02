@@ -31,6 +31,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173") // Adjust the origin as needed
 public class AuthController {
 
     private final UserService userService;
