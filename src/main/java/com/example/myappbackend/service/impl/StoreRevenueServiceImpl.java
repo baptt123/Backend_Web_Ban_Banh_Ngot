@@ -1,50 +1,93 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.DTO.ProductRevenueDTO;
+import com.example.myappbackend.dto.response.RevenueStatisticsResponse;
+import com.example.myappbackend.model.OrderStatus;
 import com.example.myappbackend.repository.OrdersRepository;
-import com.example.myappbackend.service.interfaceservice.StoreRevenueService;
+import com.example.myappbackend.service.interfaceservice.RevenueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class StoreRevenueServiceImpl implements StoreRevenueService {
+public class StoreRevenueServiceImpl implements RevenueService {
 
     private final OrdersRepository ordersRepository;
 
-    private final Integer STORE_ID = 1;
-
     @Override
-    public List<RevenueResponse> getDailyRevenue(RevenueFilterRequest request) {
-        List<Object[]> raw = ordersRepository.getDailyRevenue(STORE_ID, request.getStartDate(), request.getEndDate());
-        return raw.stream()
-                .map(obj -> new RevenueResponse(
-                        ((java.sql.Date) obj[0]).toLocalDate(),
-                        (BigDecimal) obj[1]
-                )).collect(Collectors.toList());
+    public RevenueStatisticsResponse getWeeklyRevenue(LocalDateTime startDate) {
+        LocalDateTime endDate = startDate.plusWeeks(1);
+        return calculateRevenue(startDate, endDate, "WEEKLY");
     }
 
     @Override
-    public List<RevenueResponse> getWeeklyRevenue(Integer year) {
-        List<Object[]> raw = ordersRepository.getWeeklyRevenue(STORE_ID, year);
-        return raw.stream()
-                .map(obj -> new RevenueResponse(
-                        LocalDate.ofYearDay(year, ((Integer) obj[0] - 1) * 7 + 1),
-                        (BigDecimal) obj[1]
-                )).collect(Collectors.toList());
+    public RevenueStatisticsResponse getMonthlyRevenue(LocalDateTime startDate) {
+        LocalDateTime endDate = startDate.with(TemporalAdjusters.lastDayOfMonth());
+        return calculateRevenue(startDate, endDate, "MONTHLY");
     }
 
     @Override
-    public List<RevenueResponse> getMonthlyRevenue(Integer year) {
-        List<Object[]> raw = ordersRepository.getMonthlyRevenue(STORE_ID, year);
-        return raw.stream()
-                .map(obj -> new RevenueResponse(
-                        LocalDate.of(year, (Integer) obj[0], 1),
-                        (BigDecimal) obj[1]
-                )).collect(Collectors.toList());
+    public RevenueStatisticsResponse getYearlyRevenue(Integer year) {
+        LocalDateTime startDate = LocalDateTime.of(year, 1, 1, 0, 0);
+        LocalDateTime endDate = startDate.with(TemporalAdjusters.lastDayOfYear());
+        return calculateRevenue(startDate, endDate, "YEARLY");
+    }
+
+    @Override
+    public List<RevenueStatisticsResponse> getRevenueHistory(String period, LocalDateTime startDate, LocalDateTime endDate) {
+        List<RevenueStatisticsResponse> revenueHistory = new ArrayList<>();
+        LocalDateTime currentDate = startDate;
+
+        while (!currentDate.isAfter(endDate)) {
+            RevenueStatisticsResponse revenue;
+            switch (period.toUpperCase()) {
+                case "WEEKLY":
+                    revenue = getWeeklyRevenue(currentDate);
+                    currentDate = currentDate.plusWeeks(1);
+                    break;
+                case "MONTHLY":
+                    revenue = getMonthlyRevenue(currentDate);
+                    currentDate = currentDate.plusMonths(1);
+                    break;
+                case "YEARLY":
+                    revenue = getYearlyRevenue(currentDate.getYear());
+                    currentDate = currentDate.plusYears(1);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid period. Use WEEKLY, MONTHLY, or YEARLY");
+            }
+            revenueHistory.add(revenue);
+        }
+        return revenueHistory;
+    }
+
+    private RevenueStatisticsResponse calculateRevenue(LocalDateTime startDate, LocalDateTime endDate, String period) {
+        List<Object[]> results = ordersRepository.calculateRevenue(startDate, endDate, OrderStatus.SHIPPED);
+        
+        RevenueStatisticsResponse response = new RevenueStatisticsResponse();
+        response.setStartDate(startDate);
+        response.setEndDate(endDate);
+        response.setPeriod(period);
+        
+        if (!results.isEmpty()) {
+            Object[] result = results.get(0);
+            response.setTotalRevenue((BigDecimal) result[0]);
+            response.setTotalOrders(((Long) result[1]).intValue());
+        } else {
+            response.setTotalRevenue(BigDecimal.ZERO);
+            response.setTotalOrders(0);
+        }
+        
+        return response;
+    }
+    @Override
+    public List<ProductRevenueDTO> getRevenueByProducts(LocalDateTime startDate, LocalDateTime endDate) {
+        return ordersRepository.getRevenueByProducts(startDate, endDate, OrderStatus.SHIPPED);
     }
 }
