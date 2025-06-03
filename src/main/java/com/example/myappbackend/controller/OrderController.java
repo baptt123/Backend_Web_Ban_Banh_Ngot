@@ -1,5 +1,7 @@
 package com.example.myappbackend.controller;
 
+import com.example.myappbackend.dto.DTO.OrderRequestDTO;
+import com.example.myappbackend.dto.DTO.OrderResponseDTO;
 import com.example.myappbackend.dto.request.OrderRequest;
 import com.example.myappbackend.dto.response.OrderResponse;
 import com.example.myappbackend.exception.OrderNotCreateException;
@@ -13,7 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173","http://localhost:3000"})
 public class OrderController {
 
     @Autowired
@@ -30,5 +32,29 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi: " + ex.getMessage());
         }
     }
+    @GetMapping
+    public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrdersByStore());
+    }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> getOrder(@PathVariable Integer id) {
+        return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    @PostMapping
+    public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO request) {
+        return ResponseEntity.ok(orderService.createOrder(request));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderRequestDTO request) {
+        return ResponseEntity.ok(orderService.updateOrder(id, request));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.noContent().build();
+    }
 }

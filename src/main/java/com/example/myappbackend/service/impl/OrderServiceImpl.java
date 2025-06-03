@@ -1,10 +1,14 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.DTO.OrderDetailResponseDTO;
+import com.example.myappbackend.dto.DTO.OrderRequestDTO;
+import com.example.myappbackend.dto.DTO.OrderResponseDTO;
 import com.example.myappbackend.dto.request.OrderRequest;
-import com.example.myappbackend.dto.response.OrderHistoryDetailResponse;
-import com.example.myappbackend.dto.response.OrderHistoryResponse;
-import com.example.myappbackend.dto.response.OrderResponse;
+
+import com.example.myappbackend.dto.response.*;
+
 import com.example.myappbackend.exception.OrderNotCreateException;
+
 import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.*;
 import com.example.myappbackend.repository.*;
@@ -39,17 +43,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponse placeOrder(OrderRequest dto) {
-        User user = userRepository.findById(dto.getUserId())
-                .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy người dùng với ID: " + dto.getUserId()));
+    public OrderResponse placeOrder(OrderRequest  orderRequestDTO) {
+        User user = userRepository.findById(orderRequestDTO.getUserId())
+                .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy người dùng với ID: " + orderRequestDTO.getUserId()));
 
-        Stores store = storeRepository.findById(dto.getStoreId())
-                .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy cửa hàng với ID: " + dto.getStoreId()));
+        Stores store = storeRepository.findById(orderRequestDTO.getStoreId())
+                .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy cửa hàng với ID: " + orderRequestDTO.getStoreId()));
 
         BigDecimal total = BigDecimal.ZERO;
         List<OrderDetails> orderDetailsList = new ArrayList<>();
 
-        for (OrderRequest.OrderItemDTO item : dto.getItems()) {
+        for (OrderRequest.OrderItemDTO item :orderRequestDTO.getItems()) {
             Products product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy sản phẩm với ID: " + item.getProductId()));
 
@@ -135,5 +139,65 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
     }
 
+    @Override
+    public List<OrderResponseDTO> getAllOrdersByStore() {
+        return ordersRepository.findByStoreStoreId(1).stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    @Override
+    public OrderResponseDTO getOrderById(Integer orderId) {
+        Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        return mapToResponse(order);
+    }
+
+    @Override
+    public OrderResponseDTO createOrder(OrderRequestDTO request) {
+        Orders order = new Orders();
+        order.setTotalAmount(request.getTotalAmount());
+        order.setStatus(request.getStatus());
+        order.setPaymentMethod(request.getPaymentMethod());
+        Stores store = new Stores();
+        store.setStoreId(1);
+        order.setStore(store);
+        ordersRepository.save(order);
+        return mapToResponse(order);
+    }
+
+    @Override
+    public OrderResponseDTO updateOrder(Integer orderId, OrderRequestDTO request) {
+        Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        order.setTotalAmount(request.getTotalAmount());
+        order.setStatus(request.getStatus());
+        order.setPaymentMethod(request.getPaymentMethod());
+        ordersRepository.save(order);
+        return mapToResponse(order);
+    }
+
+    @Override
+    public void deleteOrder(Integer orderId) {
+        Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        ordersRepository.delete(order);
+    }
+
+    private OrderResponseDTO mapToResponse(Orders order) {
+        OrderResponseDTO response = new OrderResponseDTO();
+        response.setOrderId(order.getOrderId());
+        response.setTotalAmount(order.getTotalAmount());
+        response.setStatus(order.getStatus());
+        response.setPaymentMethod(order.getPaymentMethod());
+        response.setCreatedAt(order.getCreatedAt());
+        response.setUpdatedAt(order.getUpdatedAt());
+        response.setOrderDetails(order.getOrderDetails().stream().map(detail -> {
+            OrderDetailResponseDTO d = new OrderDetailResponseDTO();
+            d.setProductId(detail.getProduct().getProductId());
+            d.setProductName(detail.getProduct().getName());
+            d.setQuantity(detail.getQuantity());
+            d.setPrice(detail.getPrice());
+            d.setCustomization(detail.getCustomization());
+            return d;
+        }).collect(Collectors.toList()));
+        return response;
+    }
 
 }
+
