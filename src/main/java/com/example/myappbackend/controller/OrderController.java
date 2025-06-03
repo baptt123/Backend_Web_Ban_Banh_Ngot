@@ -21,7 +21,7 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    @PostMapping
+    @PostMapping("/place-order")
     public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
         try {
             OrderResponse response = orderService.placeOrder(request);
@@ -32,7 +32,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi: " + ex.getMessage());
         }
     }
-    @GetMapping
+    @GetMapping("/getallordersbystore")
     public ResponseEntity<List<OrderResponseDTO>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrdersByStore());
     }
@@ -42,7 +42,7 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrderById(id));
     }
 
-    @PostMapping
+    @PostMapping("/create-order-store")
     public ResponseEntity<OrderResponseDTO> createOrder(@RequestBody OrderRequestDTO request) {
         return ResponseEntity.ok(orderService.createOrder(request));
     }

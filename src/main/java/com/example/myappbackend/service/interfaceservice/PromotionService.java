@@ -5,8 +5,10 @@ import com.example.myappbackend.dto.response.PromotionResponse;
 
 import java.util.List;
 
-public interface StorePromotionService {
-    List<PromotionResponse> getAllPromotionsForStore(Integer storeId);
+public interface PromotionService {
     PromotionResponse createPromotion(PromotionRequest request);
-    void deletePromotion(Integer promotionId);
+    PromotionResponse updatePromotion(Integer id, PromotionRequest request);
+    void deletePromotion(Integer id);
+    PromotionResponse getPromotionById(Integer id);
+    List<PromotionResponse> getAllPromotions();
 }

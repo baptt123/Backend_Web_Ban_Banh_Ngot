@@ -1,7 +1,6 @@
+// DTOs
 package com.example.myappbackend.dto.request;
-
 import lombok.Data;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
