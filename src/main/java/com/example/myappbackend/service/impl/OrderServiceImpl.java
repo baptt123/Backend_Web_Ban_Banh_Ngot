@@ -1,7 +1,5 @@
 package com.example.myappbackend.service.impl;
 
-import com.example.myappbackend.dto.DTO.OrderDetailResponseDTO;
-import com.example.myappbackend.dto.DTO.OrderResponseDTO;
 import com.example.myappbackend.dto.request.OrderRequest;
 import com.example.myappbackend.dto.response.OrderHistoryDetailResponse;
 import com.example.myappbackend.dto.response.OrderHistoryResponse;
@@ -137,39 +135,5 @@ public class OrderServiceImpl implements OrderService {
         }).collect(Collectors.toList());
     }
 
-    @Override
-    public List<OrderResponseDTO> getOrdersByStoreId(Integer storeId) {
-        return ordersRepository.findByStore_StoreId(storeId).stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
 
-    @Override
-    public OrderResponseDTO getOrderById(Integer orderId) {
-        Orders order = ordersRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order ID " + orderId + " not found"));
-        return mapToDTO(order);
-    }
-
-    private OrderResponseDTO mapToDTO(Orders order) {
-        OrderResponseDTO dto = new OrderResponseDTO();
-        dto.setOrderId(order.getOrderId());
-        dto.setTotalAmount(order.getTotalAmount());
-        dto.setStatus(order.getStatus());
-        dto.setPaymentMethod(order.getPaymentMethod());
-        dto.setCreatedAt(order.getCreatedAt());
-
-        List<OrderDetailResponseDTO> details = order.getOrderDetails().stream().map(detail -> {
-            OrderDetailResponseDTO d = new OrderDetailResponseDTO();
-            d.setProductId(detail.getProduct().getProductId());
-            d.setProductName(detail.getProduct().getName());
-            d.setQuantity(detail.getQuantity());
-            d.setPrice(detail.getPrice());
-            d.setCustomization(detail.getCustomization());
-            return d;
-        }).collect(Collectors.toList());
-
-        dto.setOrderDetails(details);
-        return dto;
-    }
 }

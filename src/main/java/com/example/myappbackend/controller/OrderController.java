@@ -1,6 +1,5 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.dto.DTO.OrderResponseDTO;
 import com.example.myappbackend.dto.request.OrderRequest;
 import com.example.myappbackend.dto.response.OrderResponse;
 import com.example.myappbackend.exception.OrderNotCreateException;
@@ -31,14 +30,5 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi: " + ex.getMessage());
         }
     }
-    // Mặc định storeId = 1
-    @GetMapping
-    public List<OrderResponseDTO> getAllOrders() {
-        return orderService.getOrdersByStoreId(1);
-    }
 
-    @GetMapping("/{id}")
-    public OrderResponseDTO getOrderById(@PathVariable("id") Integer orderId) {
-        return orderService.getOrderById(orderId);
-    }
 }

@@ -1,8 +1,5 @@
 package com.example.myappbackend.service.interfaceservice;
 
-import com.example.myappbackend.dto.request.RevenueFilterRequest;
-import com.example.myappbackend.dto.response.RevenueResponse;
-
 import java.util.List;
 
 public interface StoreRevenueService {
