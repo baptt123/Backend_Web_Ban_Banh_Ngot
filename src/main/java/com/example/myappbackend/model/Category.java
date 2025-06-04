@@ -17,4 +17,11 @@ public class Category {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private Stores store;
+
+    @Column(name = "deleted", nullable = false)
+    private int deleted = 0;
+
 }

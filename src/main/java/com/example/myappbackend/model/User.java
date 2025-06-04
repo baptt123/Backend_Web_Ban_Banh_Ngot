@@ -50,7 +50,11 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
+    @ManyToOne
+    @JoinColumn(name = "store_id") // hoặc tên cột liên quan trong database
+    private Stores store;
+    @Column(name = "deleted")
+    private int deleted;
     // Set create and update time for first record when user register
     @PrePersist
     protected void onCreate() {

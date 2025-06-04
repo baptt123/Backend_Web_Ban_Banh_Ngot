@@ -4,6 +4,7 @@ package com.example.myappbackend.config;
 //import com.example.myappbackend.security.JwtAuthenticationFilter;
 
 import com.example.myappbackend.security.JwtAuthenticationFilter;
+import com.example.myappbackend.service.customservice.CustomUserDetailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,11 +38,14 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailService customUserDetailService;
 
     @Autowired
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthenticationFilter jwtAuthenticationFilter, CustomUserDetailService customUserDetailService) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+
+        this.customUserDetailService = customUserDetailService;
     }
 
 
@@ -83,6 +87,8 @@ public class SecurityConfig {
                                 .requestMatchers("/api/ratings/**").permitAll()
                                 .requestMatchers("/api/products/getproducts").permitAll()
                                 .requestMatchers("/api/paypal/**").permitAll()
+                                .requestMatchers("/api/store/**").permitAll()
+                                .requestMatchers("/api/orders/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -102,9 +108,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173","http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type","X-Requested-With"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
