@@ -1,5 +1,7 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.DTO.CommentRequestDTO;
+import com.example.myappbackend.dto.DTO.CommentResponseDTO;
 import com.example.myappbackend.dto.request.CommentRequest;
 import com.example.myappbackend.dto.response.CommentResponse;
 import com.example.myappbackend.exception.ResourceNotFoundException;
@@ -67,5 +69,60 @@ public class CommentServiceImpl implements CommentService {
         response.setProductId(comment.getProduct().getProductId());
         response.setCreatedAt(comment.getCreatedAt());
         return response;
+    }
+
+    @Override
+    public CommentResponseDTO createComment(CommentRequestDTO dto) {
+        Products product = productRepository.findById(dto.getProductId())
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        // Tạm thời dùng userId = 1 để test
+        User user = userRepository.findById(1)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Comment comment = new Comment();
+        comment.setContent(dto.getContent());
+        comment.setProduct(product);
+        comment.setUser(user);
+        commentRepository.save(comment);
+
+        return mapToResponseDTO(comment);
+    }
+
+    @Override
+    public List<CommentResponseDTO> getCommentsByProductId(Integer productId) {
+        Products product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        return commentRepository.findByProduct(product)
+                .stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public CommentResponseDTO updateComment(Integer commentId, CommentRequestDTO dto) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+
+        comment.setContent(dto.getContent());
+        commentRepository.save(comment);
+        return mapToResponseDTO(comment);
+    }
+
+    @Override
+    public void deleteCommentManagement(Integer commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
+        commentRepository.delete(comment);
+    }
+
+    private CommentResponseDTO mapToResponseDTO(Comment comment) {
+        CommentResponseDTO dto = new CommentResponseDTO();
+        dto.setId(comment.getId());
+        dto.setContent(comment.getContent());
+        dto.setUsername(comment.getUser().getUsername());
+        dto.setCreatedAt(comment.getCreatedAt());
+        return dto;
     }
 }
