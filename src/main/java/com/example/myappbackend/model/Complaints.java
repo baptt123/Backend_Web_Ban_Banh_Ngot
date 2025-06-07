@@ -13,9 +13,9 @@ public class Complaints {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "order_id", nullable = false)
-    private Orders order;
+//    @ManyToOne
+//    @JoinColumn(name = "order_id", nullable = false)
+//    private Orders order;
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
@@ -27,9 +27,9 @@ public class Complaints {
     @Column(name = "admin_response", columnDefinition = "TEXT")
     private String adminResponse;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private ComplaintStatus status = ComplaintStatus.PENDING;
+//    @Enumerated(EnumType.STRING)
+//    @Column(name = "status", nullable = false)
+//    private ComplaintStatus status = ComplaintStatus.PENDING;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -37,7 +37,7 @@ public class Complaints {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public enum ComplaintStatus {
-        PENDING, IN_PROGRESS, RESOLVED, REJECTED
-    }
+//    public enum ComplaintStatus {
+//        PENDING, IN_PROGRESS, RESOLVED, REJECTED
+//    }
 }
