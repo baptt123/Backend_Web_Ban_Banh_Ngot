@@ -89,6 +89,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/paypal/**").permitAll()
                                 .requestMatchers("/api/store/**").permitAll()
                                 .requestMatchers("/api/orders/**").permitAll()
+                                .requestMatchers("/api/complaints/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
