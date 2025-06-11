@@ -1,73 +1,46 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.service.impl.PaypalService;
-import com.example.myappbackend.service.impl.ExchangeRateService;
-import lombok.RequiredArgsConstructor;
+import com.example.myappbackend.dto.response.CaptureOrderResponse;
+import com.example.myappbackend.dto.response.CreateOrderResponse;
+import com.example.myappbackend.service.paypalservice.PaypalService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/paypal")
-@CrossOrigin(origins = "http://localhost:5173")
-@RequiredArgsConstructor
+@CrossOrigin({"http://localhost:5173", "http://localhost:3000"})
 public class PaypalController {
-
+    @Autowired
     private final PaypalService paypalService;
-    private final ExchangeRateService exchangeRateService;
+
+    public PaypalController(PaypalService paypalService) {
+        this.paypalService = paypalService;
+    }
 
     @PostMapping("/create-paypal-order")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> payload) {
+    public ResponseEntity<?> createPaypalOrder() {
+        String totalAmount = "50000";
+        String currency = "USD";
+        String referenceId = "DH" + System.currentTimeMillis();
+
         try {
-            if (!payload.containsKey("total")) {
-                return ResponseEntity.badRequest().body("Thiếu thông tin tổng tiền");
-            }
-
-            double vndAmount = Double.parseDouble(payload.get("total").toString());
-            double usdAmount = exchangeRateService.convertVndToUsd(vndAmount);
-            usdAmount = Math.round(usdAmount * 100.0) / 100.0;
-
-            if (usdAmount <= 0) {
-                return ResponseEntity.badRequest().body("Số tiền không hợp lệ");
-            }
-
-            String currency = "USD";
-            String reference = "DH" + System.currentTimeMillis();
-
-            Object paypalResponse = paypalService.createOrder(String.valueOf(usdAmount), currency, reference);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("order", paypalResponse);
-            response.put("exchangeRate", exchangeRateService.getCurrentRate());
-
+            CreateOrderResponse response = paypalService.createOrder(totalAmount, currency, referenceId);
             return ResponseEntity.ok(response);
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Số tiền không hợp lệ: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi khi tạo đơn PayPal: " + e.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
     }
 
     @PostMapping("/capture-paypal-order")
-    public ResponseEntity<?> captureOrder(@RequestParam String orderId) {
+    public ResponseEntity<?> capturePaypalOrder(@RequestParam("orderId") String orderID) {
         try {
-            Object captureResponse = paypalService.captureOrder(orderId);
-            return ResponseEntity.ok(captureResponse);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi khi capture đơn PayPal: " + e.getMessage());
-        }
-    }
-
-    @GetMapping("/exchange-rate")
-    public ResponseEntity<Map<String, Object>> getExchangeRate() {
-        try {
-            Map<String, Object> response = new HashMap<>();
-            response.put("rate", exchangeRateService.getCurrentRate());
+            CaptureOrderResponse response = paypalService.captureOrder(orderID);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
         }
     }
 }
