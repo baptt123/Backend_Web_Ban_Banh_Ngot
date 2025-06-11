@@ -50,18 +50,18 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+  
     @ManyToOne
     @JoinColumn(name = "store_id")
     private Stores store;
     @Column(name = "deleted")
     private int deleted;
-
+  
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
-
 
     @PreUpdate
     protected void onUpdate() {

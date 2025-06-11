@@ -53,9 +53,9 @@ public class GoogleAuthService {
                     new NetHttpTransport(), GsonFactory.getDefaultInstance())
                     .setAudience(Collections.singletonList(googleClientId))
                     .build();
+          
             GoogleIdToken idToken = verifier.verify(googleToken);
-
-            // Check if token is valid
+          
             if (idToken == null) {
                 System.out.println("Token Google không hợp lệ");
                 throw BusinessException.badRequest("Token Google không hợp lệ", "INVALID_GOOGLE_TOKEN");
@@ -127,7 +127,7 @@ public class GoogleAuthService {
                 .role(customerRole)
                 .active(true)
                 .build();
-
+      
         // Save the user first to get the user ID
         User savedUser = userRepository.save(user);
 

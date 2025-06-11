@@ -73,7 +73,7 @@ public class UserService {
                     "EMAIL_ALREADY_EXISTS"
             );
         }
-        
+
         // Encode password using Bcrypt
         String encodedPassword = passwordEncoder.encode(registerRequest.getPassword());
 
@@ -144,7 +144,7 @@ public class UserService {
         resetPasswordTokenRepository.save(resetToken);
         emailService.sendResetPasswordEmail(user, token);
     }
-
+  
     // Update user profile information
     @Transactional
     public UserProfile updateUserProfile(Integer userId, String fullName,

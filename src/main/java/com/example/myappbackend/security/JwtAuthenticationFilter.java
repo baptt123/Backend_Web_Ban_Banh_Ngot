@@ -86,7 +86,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
-
     // Read token from Authorization header if exists, otherwise return null
     private String getHeaderToken(HttpServletRequest request) {
         String header = request.getHeader(HttpHeaders.AUTHORIZATION);
