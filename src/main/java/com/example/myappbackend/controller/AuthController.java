@@ -6,6 +6,7 @@ import com.example.myappbackend.dto.request.RegisterRequest;
 import com.example.myappbackend.dto.DTO.UserDTO;
 import com.example.myappbackend.dto.request.LoginRequest;
 import com.example.myappbackend.dto.request.ResetPasswordRequest;
+import com.example.myappbackend.exception.BusinessException;
 import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.service.impl.*;
@@ -31,7 +32,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173") // Adjust the origin as needed
 public class AuthController {
 
     private final UserService userService;
@@ -69,7 +69,7 @@ public class AuthController {
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+    public ResponseEntity<String> verifyEmail(@RequestParam(name = "token") String token) {
         boolean verified = verificationService.verifyToken(token);
         if (verified) {
             return ResponseEntity.ok("Xác thực email thành công!");
@@ -81,7 +81,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             User user = userRepository.findByUsername(loginRequest.getUsername())
-                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
+                    .orElseThrow(() -> BusinessException.badRequest("Không tìm thấy người dùng", "USER_NOT_FOUND"));
 
             if (!user.isActive()) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -179,7 +179,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+    public ResponseEntity<?> forgotPassword(@RequestParam(name = "email") String email) {
         userService.createPasswordResetToken(email);
         return ResponseEntity.ok("Email đặt lại mật khẩu đã được gửi.");
     }

@@ -1,15 +1,13 @@
 package com.example.myappbackend.service.impl;
 
-import com.example.myappbackend.model.ResetPasswordToken;
-import com.example.myappbackend.model.VerificationToken;
+import com.example.myappbackend.model.*;
 import com.example.myappbackend.dto.request.RegisterRequest;
 import com.example.myappbackend.dto.DTO.RoleDTO;
 import com.example.myappbackend.dto.DTO.UserDTO;
 import com.example.myappbackend.exception.BusinessException;
-import com.example.myappbackend.model.Role;
-import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.ResetPasswordTokenRepository;
 import com.example.myappbackend.repository.RoleRepository;
+import com.example.myappbackend.repository.UserProfileRepository;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +16,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 /*
  * Service - Business logic related to User
  * Controller -> Service -> Repository (Model Layer in Express.js)
- * @Transactional make sure if you have error -> throw error to client and stop process
+ * @Transactional make sure if you have error -> throw error to the client and stop the process
  */
 
 @Service
@@ -36,6 +36,7 @@ public class UserService {
     private final VerificationTokenRepository tokenRepository;
     private final ResetPasswordTokenRepository resetPasswordTokenRepository;
     private final EmailService emailService;
+    private final UserProfileRepository userProfileRepository;
 
     @Autowired
     public UserService(
@@ -44,13 +45,15 @@ public class UserService {
             RoleRepository roleRepository,
             VerificationTokenRepository tokenRepository,
             ResetPasswordTokenRepository resetPasswordTokenRepository,
-            EmailService emailService) {
+            EmailService emailService,
+            UserProfileRepository userProfileRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.tokenRepository = tokenRepository;
         this.resetPasswordTokenRepository = resetPasswordTokenRepository;
         this.emailService = emailService;
+        this.userProfileRepository = userProfileRepository;
     }
 
     @Transactional
@@ -88,18 +91,17 @@ public class UserService {
                 .active(false)
                 .build();
 
-        // Save to database (SQL auto generate by JPA)
         User savedUser = userRepository.save(user);
 
-        // Send verification email
-        String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = VerificationToken.builder()
-                .token(token)
+        // Create default user profile with username as fullName
+        UserProfile userProfile = UserProfile.builder()
                 .user(savedUser)
-                .expiryDate(LocalDateTime.now().plusHours(24))
+                .fullName(registerRequest.getUsername()) // Default to username
                 .build();
-        tokenRepository.save(verificationToken);
-        emailService.sendVerificationEmail(savedUser, token);
+        userProfileRepository.save(userProfile);
+
+        // Send verification email
+        sendVerificationEmailToUser(savedUser);
 
         // Convert Entity to UserDTO to return for Controller -> Client
         return convertToDTO(savedUser);
@@ -126,7 +128,7 @@ public class UserService {
     @Transactional
     public void createPasswordResetToken(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy email: " + email));
+                .orElseThrow(() -> BusinessException.notFound("Không tồn tại tài khoản: " + email, "USER_NOT_FOUND"));
 
         // Xóa token cũ nếu có
         resetPasswordTokenRepository.deleteByUser(user);
@@ -141,6 +143,35 @@ public class UserService {
 
         resetPasswordTokenRepository.save(resetToken);
         emailService.sendResetPasswordEmail(user, token);
+    }
+  
+    // Update user profile information
+    @Transactional
+    public UserProfile updateUserProfile(Integer userId, String fullName,
+                                        String address, LocalDate birthDate, 
+                                        String avatarUrl) {
+        // Get profile directly from repository
+        UserProfile profile = userProfileRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> BusinessException.notFound(
+                    "Profile not found for user: " + userId, 
+                    "PROFILE_NOT_FOUND"
+                ));
+
+        // Only update fields that are provided (not null)
+        if (fullName != null) {
+            profile.setFullName(fullName);
+        }
+        if (address != null) {
+            profile.setAddress(address);
+        }
+        if (birthDate != null) {
+            profile.setBirthDate(birthDate);
+        }
+        if (avatarUrl != null) {
+            profile.setAvatarUrl(avatarUrl);
+        }
+
+        return userProfileRepository.save(profile);
     }
 
     @Transactional
@@ -160,5 +191,62 @@ public class UserService {
         userRepository.save(user);
 
         resetPasswordTokenRepository.delete(resetToken);
+    }
+
+    // Update user email and phone (from update profile action)
+    @Transactional
+    public User updateUserInfo(Integer userId, String email, String phone) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BusinessException.notFound(
+                    "User not found: " + userId, 
+                    "USER_NOT_FOUND"
+                ));
+
+        boolean emailChanged = false;
+        
+        // Update email if provided and different from current
+        if (email != null && !email.equals(user.getEmail())) {
+            // Check if email already exists
+            if (userRepository.existsByEmail(email)) {
+                throw BusinessException.badRequest(
+                    "Email đã được sử dụng", 
+                    "EMAIL_ALREADY_EXISTS"
+                );
+            }
+            user.setEmail(email);
+            user.setActive(false);
+            emailChanged = true;
+        }
+        
+        // Update phone if provided
+        if (phone != null) {
+            user.setPhone(phone);
+        }
+
+        User savedUser = userRepository.save(user);
+        
+        // Send verification email if email was changed
+        if (emailChanged) {
+            sendVerificationEmailToUser(savedUser);
+        }
+        
+        return savedUser;
+    }
+
+    @Transactional
+    public void sendVerificationEmailToUser(User user) {
+        // Generate verification token
+        String token = UUID.randomUUID().toString();
+        
+        // Add new token to database
+        VerificationToken verificationToken = VerificationToken.builder()
+                .token(token)
+                .user(user)
+                .expiryDate(LocalDateTime.now().plusHours(24)) // 24 hours expiry
+                .build();
+        tokenRepository.save(verificationToken);
+        
+        // Send email
+        emailService.sendVerificationEmail(user, token);
     }
 }
