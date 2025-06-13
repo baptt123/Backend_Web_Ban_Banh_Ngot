@@ -50,19 +50,19 @@ public class User {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+  
     @ManyToOne
-    @JoinColumn(name = "store_id") // hoặc tên cột liên quan trong database
+    @JoinColumn(name = "store_id")
     private Stores store;
     @Column(name = "deleted")
     private int deleted;
-    // Set create and update time for first record when user register
+  
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Set update time when update action have invoked
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
