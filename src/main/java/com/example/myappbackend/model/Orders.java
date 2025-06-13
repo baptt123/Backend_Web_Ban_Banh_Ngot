@@ -17,11 +17,11 @@ public class Orders {
     private Integer orderId;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "store_id", nullable = false)
+    @JoinColumn(name = "store_id", nullable = true)
     private Stores store;
 
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
@@ -42,5 +42,7 @@ public class Orders {
     private LocalDateTime updatedAt = LocalDateTime.now();
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderDetails> orderDetails;
-
+    // --- Thêm trường này nếu chưa có ---
+    @Column(name = "paypal_order_id", length = 50)
+    private String paypalOrderId;
 }
