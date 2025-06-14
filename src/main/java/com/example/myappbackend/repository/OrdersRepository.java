@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Integer> {
@@ -36,6 +37,11 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
             "AND o.status = ?3 " +
             "GROUP BY p.productId, p.name")
     List<ProductRevenueDTO> getRevenueByProducts(LocalDateTime startDate, LocalDateTime endDate, OrderStatus status);
+    // --- Thêm phương thức này để tìm đơn hàng theo PayPal Order ID ---
+    Optional<Orders> findByPaypalOrderId(String paypalOrderId);
+    // -----------------------------------------------------------------
 
+    // Giữ lại phương thức này nếu bạn vẫn cần nó cho mục đích test khác
+    Optional<Orders> findTopByStatusOrderByCreatedAtDesc(OrderStatus status);
 
 }
