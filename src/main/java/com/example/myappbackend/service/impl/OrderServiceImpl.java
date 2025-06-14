@@ -76,7 +76,9 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(PaymentMethod.COD);
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
-
+        order.setAddress(orderRequestDTO.getAddress());
+        order.setPhone(orderRequestDTO.getPhone());
+        order.setEmail(orderRequestDTO.getEmail());
         Orders savedOrder = ordersRepository.save(order);
         if (savedOrder == null || savedOrder.getOrderId() == null) {
             throw new OrderNotCreateException("Không thể lưu đơn hàng.");
