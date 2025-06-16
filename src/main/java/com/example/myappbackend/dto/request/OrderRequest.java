@@ -10,6 +10,9 @@ public class OrderRequest {
     private Integer storeId;
     private String paymentMethod; // "COD" hoặc "ONLINE"
     private List<OrderItemDTO> items;
+    private String address;
+    private String phone;
+    private String email;
 
     @Data
     public static class OrderItemDTO {

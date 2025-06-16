@@ -9,6 +9,7 @@ import com.example.myappbackend.service.interfaceservice.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/place-order")
     public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
         try {
@@ -57,4 +58,6 @@ public class OrderController {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
     }
+
+
 }

@@ -6,6 +6,7 @@ import com.example.myappbackend.service.interfaceservice.RevenueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -18,25 +19,25 @@ import java.util.List;
 public class RevenueController {
 
     private final RevenueService revenueService;
-
+    @PreAuthorize("MANAGER")
     @GetMapping("/weekly")
     public ResponseEntity<RevenueStatisticsResponse> getWeeklyRevenue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate) {
         return ResponseEntity.ok(revenueService.getWeeklyRevenue(startDate));
     }
-
+    @PreAuthorize("MANAGER")
     @GetMapping("/monthly")
     public ResponseEntity<RevenueStatisticsResponse> getMonthlyRevenue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate) {
         return ResponseEntity.ok(revenueService.getMonthlyRevenue(startDate));
     }
-
+    @PreAuthorize("MANAGER")
     @GetMapping("/yearly")
     public ResponseEntity<RevenueStatisticsResponse> getYearlyRevenue(
             @RequestParam Integer year) {
         return ResponseEntity.ok(revenueService.getYearlyRevenue(year));
     }
-
+    @PreAuthorize("MANAGER")
     @GetMapping("/history")
     public ResponseEntity<List<RevenueStatisticsResponse>> getRevenueHistory(
             @RequestParam String period,
@@ -44,6 +45,7 @@ public class RevenueController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         return ResponseEntity.ok(revenueService.getRevenueHistory(period, startDate, endDate));
     }
+    @PreAuthorize("MANAGER")
     @GetMapping("/by-products")
     public ResponseEntity<List<ProductRevenueDTO>> getRevenueByProducts(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,

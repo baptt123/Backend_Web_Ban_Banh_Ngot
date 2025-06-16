@@ -1,73 +1,150 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.service.impl.PaypalService;
-import com.example.myappbackend.service.impl.ExchangeRateService;
-import lombok.RequiredArgsConstructor;
+import com.example.myappbackend.dto.DTO.CreateOrderRequestDTO;
+import com.example.myappbackend.dto.DTO.CartItemDTO;
+import com.example.myappbackend.dto.response.CaptureOrderResponse;
+import com.example.myappbackend.dto.response.CreateOrderResponse;
+import com.example.myappbackend.model.*;
+import com.example.myappbackend.repository.*;
+import com.example.myappbackend.service.paypalservice.PaypalService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/paypal")
-@CrossOrigin(origins = "http://localhost:5173")
-@RequiredArgsConstructor
+@CrossOrigin({"http://localhost:5173", "http://localhost:3000"})
 public class PaypalController {
 
     private final PaypalService paypalService;
-    private final ExchangeRateService exchangeRateService;
+    private final OrderDetailsRepository orderDetailsRepository;
+    private final ProductRepository productRepository;
+    private final OrdersRepository orderRepository;
+    // Removed UserRepository and StoreRepository injection for simpler testing
 
+    public PaypalController(PaypalService paypalService,
+                            OrdersRepository orderRepository,
+                            OrderDetailsRepository orderDetailsRepository,
+                            ProductRepository productRepository) {
+        this.paypalService = paypalService;
+        this.orderRepository = orderRepository;
+        this.orderDetailsRepository = orderDetailsRepository;
+        this.productRepository = productRepository;
+    }
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/create-paypal-order")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> payload) {
+    @Transactional
+    public ResponseEntity<?> createPaypalOrder(@RequestBody CreateOrderRequestDTO request) {
+        BigDecimal recalculatedTotalVND = BigDecimal.ZERO;
+        List<OrderDetails> orderDetailsList = new ArrayList<>();
+        String currency = "USD";
+
         try {
-            if (!payload.containsKey("total")) {
-                return ResponseEntity.badRequest().body("Thiếu thông tin tổng tiền");
+            for (CartItemDTO item : request.getCartList()) {
+                Optional<Products> productOptional = productRepository.findById(item.getProductId());
+                if (productOptional.isEmpty()) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Product not found with ID: " + item.getProductId()));
+                }
+                Products product = productOptional.get();
+
+                if (product.getPrice().compareTo(item.getPrice()) != 0) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Price mismatch for product: " + product.getName()));
+                }
+
+                BigDecimal itemTotal = product.getPrice().multiply(new BigDecimal(item.getQuantity()));
+                recalculatedTotalVND = recalculatedTotalVND.add(itemTotal);
+
+                OrderDetails orderDetail = new OrderDetails();
+                orderDetail.setProduct(product);
+                orderDetail.setQuantity(item.getQuantity());
+                orderDetail.setPrice(product.getPrice());
+                orderDetail.setCustomization("");
+                orderDetailsList.add(orderDetail);
             }
 
-            double vndAmount = Double.parseDouble(payload.get("total").toString());
-            double usdAmount = exchangeRateService.convertVndToUsd(vndAmount);
-            usdAmount = Math.round(usdAmount * 100.0) / 100.0;
+            BigDecimal shippingRate = new BigDecimal("0.10");
+            BigDecimal taxRate = new BigDecimal("0.08");
 
-            if (usdAmount <= 0) {
-                return ResponseEntity.badRequest().body("Số tiền không hợp lệ");
+            BigDecimal calculatedShipping = recalculatedTotalVND.multiply(shippingRate);
+            BigDecimal calculatedTax = recalculatedTotalVND.multiply(taxRate);
+            BigDecimal finalCalculatedTotalVND = recalculatedTotalVND.add(calculatedShipping).add(calculatedTax);
+
+            BigDecimal exchangeRate = new BigDecimal("25000");
+            BigDecimal totalAmountUSD = finalCalculatedTotalVND.divide(exchangeRate, 2, RoundingMode.HALF_UP);
+
+            // === Create and Save Order in DB with PENDING status ===
+            Orders newOrder = new Orders();
+            Stores store = new Stores();
+            store.setStoreId(1);
+            User user=new User();
+            user.setUserId(1);
+            user.setStore(store);
+            // --- MODIFICATION FOR TESTING: Set User and Store to null ---
+//            newOrder.setUser(null); // Or set a dummy user if your DB doesn't allow null
+
+            newOrder.setStore(store); // Or set a dummy store if your DB doesn't allow null
+            // -------------------------------------------------------------
+            newOrder.setTotalAmount(finalCalculatedTotalVND);
+            newOrder.setStatus(OrderStatus.PENDING);
+            newOrder.setPaymentMethod(PaymentMethod.ONLINE);
+            newOrder.setCreatedAt(LocalDateTime.now());
+            newOrder.setUpdatedAt(LocalDateTime.now());
+            newOrder.setUser(user);
+            Orders savedOrder = orderRepository.save(newOrder);
+
+            for (OrderDetails detail : orderDetailsList) {
+                detail.setOrder(savedOrder);
+                orderDetailsRepository.save(detail);
             }
 
-            String currency = "USD";
-            String reference = "DH" + System.currentTimeMillis();
+            String referenceId = "ORDER-" + savedOrder.getOrderId();
 
-            Object paypalResponse = paypalService.createOrder(String.valueOf(usdAmount), currency, reference);
+            CreateOrderResponse paypalResponse = paypalService.createOrder(totalAmountUSD.toString(), currency, referenceId);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("order", paypalResponse);
-            response.put("exchangeRate", exchangeRateService.getCurrentRate());
+            // Save the PayPal Order ID back to your internal order
+            savedOrder.setPaypalOrderId(paypalResponse.getId());
+            orderRepository.save(savedOrder);
 
-            return ResponseEntity.ok(response);
-        } catch (NumberFormatException e) {
-            return ResponseEntity.badRequest().body("Số tiền không hợp lệ: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi khi tạo đơn PayPal: " + e.getMessage());
+            System.out.println("PayPal Order ID: " + paypalResponse.getId() + " for internal order ID: " + savedOrder.getOrderId());
+
+            return ResponseEntity.ok(paypalResponse);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("message", "Error creating PayPal order: " + ex.getMessage()));
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/capture-paypal-order")
-    public ResponseEntity<?> captureOrder(@RequestParam String orderId) {
+    @Transactional
+    public ResponseEntity<?> capturePaypalOrder(@RequestParam("orderId") String paypalOrderID) {
         try {
-            Object captureResponse = paypalService.captureOrder(orderId);
-            return ResponseEntity.ok(captureResponse);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Lỗi khi capture đơn PayPal: " + e.getMessage());
-        }
-    }
+            CaptureOrderResponse captureResponse = paypalService.captureOrder(paypalOrderID);
 
-    @GetMapping("/exchange-rate")
-    public ResponseEntity<Map<String, Object>> getExchangeRate() {
-        try {
-            Map<String, Object> response = new HashMap<>();
-            response.put("rate", exchangeRateService.getCurrentRate());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            // Find the order by the PayPal Order ID
+            // Make sure you have `findByPaypalOrderId` in your OrderRepository
+            Orders orderToUpdate = orderRepository.findByPaypalOrderId(paypalOrderID)
+                    .orElseThrow(() -> new RuntimeException("Order not found with PayPal ID: " + paypalOrderID));
+
+            // Update order status to DELIVERED (or COMPLETED)
+            orderToUpdate.setStatus(OrderStatus.DELIVERED);
+            orderToUpdate.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(orderToUpdate);
+
+            return ResponseEntity.ok(captureResponse);
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("message", "Error capturing PayPal order: " + ex.getMessage()));
         }
     }
 }
