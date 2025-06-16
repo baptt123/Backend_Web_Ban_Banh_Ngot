@@ -7,6 +7,7 @@ import com.example.myappbackend.dto.request.CommentRequest;
 import com.example.myappbackend.dto.response.CommentResponse;
 import com.example.myappbackend.service.interfaceservice.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,6 +47,7 @@ public class CommentController {
     /*
     This endpoint is used to create a comment (management by store).
      */
+    @PreAuthorize("MANAGER")
     @PostMapping
     public CommentResponseDTO createComment(@RequestBody CommentRequestDTO dto) {
         return commentService.createComment(dto);
@@ -59,6 +61,7 @@ public class CommentController {
 //    public List<CommentResponseDTO> getCommentsByProduct(@PathVariable Integer productId) {
 //        return commentService.getCommentsByProductId(productId);
 //    }
+    @PreAuthorize("MANAGER")
     @GetMapping("/comments-store")
     public List<CommentResponse> getAllCommentsStore() {
         return commentService.getAllComments();
@@ -69,6 +72,7 @@ public class CommentController {
         It takes the comment ID as a path variable and the updated comment data in the request body.
         It returns the updated comment.(management by store).
      */
+    @PreAuthorize("MANAGER")
     @PutMapping("/{commentId}")
     public CommentResponseDTO updateComment(@PathVariable Integer commentId,
                                             @RequestBody CommentRequestDTO dto) {
@@ -78,6 +82,7 @@ public class CommentController {
     /*
         This endpoint is used to delete a comment by its ID (management by store).
      */
+    @PreAuthorize("MANAGER")
     @DeleteMapping("/{commentId}")
     public void deleteCommentManagement(@PathVariable Integer commentId) {
         commentService.deleteComment(commentId);

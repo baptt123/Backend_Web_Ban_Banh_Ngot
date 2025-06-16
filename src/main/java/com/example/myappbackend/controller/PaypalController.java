@@ -8,6 +8,7 @@ import com.example.myappbackend.model.*;
 import com.example.myappbackend.repository.*;
 import com.example.myappbackend.service.paypalservice.PaypalService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +40,7 @@ public class PaypalController {
         this.orderDetailsRepository = orderDetailsRepository;
         this.productRepository = productRepository;
     }
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/create-paypal-order")
     @Transactional
     public ResponseEntity<?> createPaypalOrder(@RequestBody CreateOrderRequestDTO request) {
@@ -122,7 +123,7 @@ public class PaypalController {
             return ResponseEntity.badRequest().body(Map.of("message", "Error creating PayPal order: " + ex.getMessage()));
         }
     }
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
     @PostMapping("/capture-paypal-order")
     @Transactional
     public ResponseEntity<?> capturePaypalOrder(@RequestParam("orderId") String paypalOrderID) {
