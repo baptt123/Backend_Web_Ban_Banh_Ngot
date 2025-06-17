@@ -14,9 +14,19 @@ public class EmailService {
 
     @Value("${spring.mail.username}")
     private String fromEmail;
-
+    @Value("${app.frontend.primaryurl}")
+    private String primaryFrontendUrl;
+    @Value("${app.frontend.secondaryurl}")
+    private String secondaryFrontendUrl;
     public void sendVerificationEmail(User user, String token) {
-        String url = "http://localhost:5173/verify?token=" + token;
+        String url;
+        try {
+            // Có thể ping thử URL chính (ví dụ: 5173) để kiểm tra đang hoạt động (nâng cao)
+            url = primaryFrontendUrl + "/verify?token=" + token;
+        } catch (Exception e) {
+            url = secondaryFrontendUrl + "/verify?token=" + token;
+        }
+//        String url = "http://localhost:5173/verify?token=" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(user.getEmail());
         message.setFrom(fromEmail);

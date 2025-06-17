@@ -19,23 +19,23 @@ public class StoreCategoryController {
     public StoreCategoryController(StoreCategoryService storeCategoryService) {
         this.storeCategoryService = storeCategoryService;
     }
-    @PreAuthorize("MANAGER")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @GetMapping
     public ResponseEntity<List<CategoryResponse>> getAll() {
         return ResponseEntity.ok(storeCategoryService.getAllCategoriesByStore(1));
     }
-    @PreAuthorize("MANAGER")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @PostMapping
     public ResponseEntity<CategoryResponse> create(@RequestBody CategoryRequest request) {
         return ResponseEntity.ok(storeCategoryService.createCategory(request));
     }
-    @PreAuthorize("MANAGER")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @PutMapping("/{id}")
     public ResponseEntity<CategoryResponse> update(@PathVariable Integer id,
                                                    @RequestBody CategoryRequest request) {
         return ResponseEntity.ok(storeCategoryService.updateCategory(id, request));
     }
-    @PreAuthorize("MANAGER")
+    @PreAuthorize("hasAuthority('MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         storeCategoryService.deleteCategory(id);

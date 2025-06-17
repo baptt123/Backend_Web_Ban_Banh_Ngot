@@ -1,8 +1,10 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.DTO.StoreDTO;
 import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.model.Products;
+import com.example.myappbackend.model.Stores;
 import com.example.myappbackend.repository.CategoriesRepository;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.StoreRepository;
@@ -77,4 +79,16 @@ public class StoreProductServiceImpl implements StoreProductService {
         res.setDeleted(0); // Mặc định là chưa xoá
         return res;
     }
+
+    public StoreDTO convertToDTO(Stores store) {
+        return StoreDTO.builder()
+                .storeId(store.getStoreId())
+                .name(store.getName())
+                .address(store.getAddress())
+                .phone(store.getPhone())
+                .managerId(store.getManager().getUserId())
+                .managerUsername(store.getManager().getUsername())
+                .build();
+    }
+
 }

@@ -102,10 +102,11 @@ public class AuthController {
 
             ResponseCookie jwtCookie = ResponseCookie.from("access_token", token)
                     .httpOnly(true)
-                    .secure(true)
+//                    .secure(true)
                     .path("/")
                     .maxAge(jwtExpiration)
-                    .sameSite("none")
+//                    .sameSite("none")
+                    .sameSite("Lax")
                     .build();
 
             Map<String, Object> responseBody = new HashMap<>();
@@ -188,5 +189,17 @@ public class AuthController {
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
+    }
+    //tự động đăng nhập ở frontend bằng jwt
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+        }
+
+        User user = (User) authentication.getPrincipal(); // hoặc lấy từ SecurityContextHolder
+        UserDTO userDTO = userService.convertToDTO(user);
+
+        return ResponseEntity.ok(userDTO);
     }
 }

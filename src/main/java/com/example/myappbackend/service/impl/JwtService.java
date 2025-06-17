@@ -31,8 +31,8 @@ public class JwtService {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
+                .map(role -> role.startsWith("ROLE_") ? role.substring(5) : role)  // <-- cắt tiền tố ROLE_
                 .collect(Collectors.toList());
-
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("roles", roles) // Thêm roles vào payload
@@ -67,14 +67,15 @@ public class JwtService {
         return true;
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+//    public boolean validateToken(String token, UserDetails userDetails) {
+//        String username = Jwts.parserBuilder()
+//                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .getSubject();
+//
+//        return username.equals(userDetails.getUsername());
+//    }
 
-        return username.equals(userDetails.getUsername());
-    }
 }

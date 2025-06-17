@@ -16,17 +16,17 @@ import java.util.List;
 public class RatingController {
 
     private final RatingService ratingService;
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
     @PostMapping("/addratings")
     public RatingResponse create(@RequestBody RatingRequest request) {
         return ratingService.addRating(request);
     }
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
     @GetMapping("/getratings")
     public List<RatingResponse> getAll() {
         return ratingService.getAllRatings();
     }
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('CUSTOMER')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
     @PutMapping("/updateratings")
     public RatingResponse update(@RequestBody RatingRequest request) {
         return ratingService.updateRating(request);

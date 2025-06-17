@@ -29,8 +29,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Convert Role to GrantedAuthority
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
-
+//        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName()));
+        authorities.add(new SimpleGrantedAuthority(user.getRole().getName()));
         // Return UserDetails to Spring Security with active status from database
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
