@@ -2,7 +2,9 @@ package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.dto.response.StoreResponse;
 import com.example.myappbackend.model.Products;
+import com.example.myappbackend.model.Stores;
 import com.example.myappbackend.repository.CategoriesRepository;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.StoreRepository;
@@ -20,6 +22,7 @@ public class StoreProductServiceImpl implements StoreProductService {
     private final ProductRepository productsRepository;
     private final CategoriesRepository categoriesRepository;
     private final StoreRepository storesRepository;
+    private final StoreRepository storeRepository;
 
     @Override
     public List<ProductResponse> getAllProductsByStore(Integer storeId) {
@@ -63,6 +66,20 @@ public class StoreProductServiceImpl implements StoreProductService {
     @Override
     public void deleteProduct(Integer productId) {
         productsRepository.deleteById(productId);
+    }
+
+    @Override
+    public List<StoreResponse> getAllStores() {
+        List<Stores> stores = storeRepository.findAll();
+
+        return stores.stream().map(store -> {
+            StoreResponse response = new StoreResponse();
+            response.setStoreId(store.getStoreId());
+            response.setName(store.getName());
+            response.setAddress(store.getAddress());
+            response.setPhone(store.getPhone());
+            return response;
+        }).collect(Collectors.toList());
     }
 
     private ProductResponse mapToResponse(Products product) {

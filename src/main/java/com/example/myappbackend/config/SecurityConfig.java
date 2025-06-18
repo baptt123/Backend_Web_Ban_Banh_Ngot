@@ -85,11 +85,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/comments/**").permitAll()
                                 .requestMatchers("/api/ratings/**").permitAll()
-                                .requestMatchers("/api/products/getproducts").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").permitAll()
                                 .requestMatchers("/api/store/**").permitAll()
                                 .requestMatchers("/api/orders/**").permitAll()
                                 .requestMatchers("/api/complaints/**").permitAll()
+                                .requestMatchers("/api/categories/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

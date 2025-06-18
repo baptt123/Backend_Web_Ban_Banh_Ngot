@@ -2,6 +2,7 @@ package com.example.myappbackend.controller;
 
 import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.dto.response.StoreResponse;
 import com.example.myappbackend.service.interfaceservice.StoreProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -39,4 +40,6 @@ public class StoreProductController {
         storeProductService.deleteProduct(id);
         return ResponseEntity.noContent().build();
     }
+
+
 }
