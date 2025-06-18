@@ -23,6 +23,7 @@ public class CommentController {
     /*
     This endpoint is used to create a comment for a product by a user.
      */
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping("/addcomment")
     public CommentResponse createComment(@RequestBody CommentRequest request) {
         return commentService.createComment(request);
@@ -31,6 +32,7 @@ public class CommentController {
     /*
     This endpoint is used to get all comments for user
      */
+    @PreAuthorize("hasAuthority('USER') or hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @GetMapping("/comments")
     public List<CommentResponse> getAllComments() {
         return commentService.getAllComments();
@@ -39,6 +41,7 @@ public class CommentController {
     /*
     This endpoint is used to delete a comment by its ID(user).
      */
+    @PreAuthorize("hasAuthority('ADMIN') ")
     @DeleteMapping("/deletecomment/{id}")
     public void deleteComment(@PathVariable Integer id) {
         commentService.deleteComment(id);
@@ -47,11 +50,11 @@ public class CommentController {
     /*
     This endpoint is used to create a comment (management by store).
      */
-    @PreAuthorize("MANAGER")
-    @PostMapping
-    public CommentResponseDTO createComment(@RequestBody CommentRequestDTO dto) {
-        return commentService.createComment(dto);
-    }
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @PostMapping
+//    public CommentResponseDTO createComment(@RequestBody CommentRequestDTO dto) {
+//        return commentService.createComment(dto);
+//    }
 
     /*
         This endpoint is used to get all comments for a specific product.
@@ -61,30 +64,31 @@ public class CommentController {
 //    public List<CommentResponseDTO> getCommentsByProduct(@PathVariable Integer productId) {
 //        return commentService.getCommentsByProductId(productId);
 //    }
-    @PreAuthorize("MANAGER")
-    @GetMapping("/comments-store")
-    public List<CommentResponse> getAllCommentsStore() {
-        return commentService.getAllComments();
-    }
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @GetMapping("/comments-store")
+//    public List<CommentResponse> getAllCommentsStore() {
+//        return commentService.getAllComments();
+//    }
 
     /*
         This endpoint is used to update a comment by its ID (management by store).
         It takes the comment ID as a path variable and the updated comment data in the request body.
         It returns the updated comment.(management by store).
      */
-    @PreAuthorize("MANAGER")
-    @PutMapping("/{commentId}")
-    public CommentResponseDTO updateComment(@PathVariable Integer commentId,
-                                            @RequestBody CommentRequestDTO dto) {
-        return commentService.updateComment(commentId, dto);
-    }
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @PutMapping("/{commentId}")
+//    public CommentResponseDTO updateComment(@PathVariable Integer commentId,
+//                                            @RequestBody CommentRequestDTO dto) {
+//        return commentService.updateComment(commentId, dto);
+//    }
 
     /*
         This endpoint is used to delete a comment by its ID (management by store).
-     */
-    @PreAuthorize("MANAGER")
-    @DeleteMapping("/{commentId}")
-    public void deleteCommentManagement(@PathVariable Integer commentId) {
-        commentService.deleteComment(commentId);
-    }
+//     */
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @DeleteMapping("/{commentId}")
+//    public void deleteCommentManagement(@PathVariable Integer commentId) {
+//        commentService.deleteComment(commentId);
+//    }
+//}
 }

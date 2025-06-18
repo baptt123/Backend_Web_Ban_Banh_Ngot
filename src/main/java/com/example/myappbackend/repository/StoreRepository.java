@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface StoreRepository extends JpaRepository<Stores, Integer> {
     Optional<Stores> findByManager(User manager);
+    Optional<Stores> findByAddress(String address);
 }

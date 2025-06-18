@@ -76,7 +76,7 @@ public class StoreProductServiceImpl implements StoreProductService {
         res.setStock(product.getStock());
         res.setImageUrl(product.getImageUrl());
         res.setCategoryName(product.getCategory().getName());
-        res.setDeleted(0); // Mặc định là chưa xoá
+        res.setDeleted(false); // Mặc định là chưa xoá
         return res;
     }
 

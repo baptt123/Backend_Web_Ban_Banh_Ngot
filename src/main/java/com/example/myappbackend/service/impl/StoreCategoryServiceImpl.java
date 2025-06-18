@@ -18,9 +18,7 @@ import java.util.stream.Collectors;
 public class StoreCategoryServiceImpl implements StoreCategoryService {
 
     private final CategoriesRepository categoriesRepository;
-    private final StoreRepository storesRepository;
-
-    private static final int DEFAULT_STORE_ID = 1;
+    private final StoreRepository storeRepository;
 
     @Override
     public List<CategoryResponse> getAllCategoriesByStore(Integer storeId) {
@@ -31,44 +29,45 @@ public class StoreCategoryServiceImpl implements StoreCategoryService {
     }
 
     @Override
-    public CategoryResponse createCategory(CategoryRequest request) {
-        Stores store = storesRepository.findById(DEFAULT_STORE_ID)
+    public CategoryResponse createCategory(Integer storeId, CategoryRequest request) {
+        Stores store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("Store not found"));
 
-        Category cat = new Category();
-        cat.setName(request.getName());
-        cat.setDescription(request.getDescription());
-        cat.setStore(store);
-        cat.setDeleted(0);
+        Category category = new Category();
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        category.setStore(store);
+        category.setDeleted(0);
 
-        return mapToResponse(categoriesRepository.save(cat));
+        return mapToResponse(categoriesRepository.save(category));
     }
 
     @Override
-    public CategoryResponse updateCategory(Integer id, CategoryRequest request) {
-        Category cat = categoriesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+    public CategoryResponse updateCategory(Integer storeId, Integer categoryId, CategoryRequest request) {
+        Category category = categoriesRepository.findByCategoryIdAndStore_StoreIdAndDeleted(categoryId, storeId, 0)
+                .orElseThrow(() -> new RuntimeException("Category not found or does not belong to your store"));
 
-        cat.setName(request.getName());
-        cat.setDescription(request.getDescription());
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
 
-        return mapToResponse(categoriesRepository.save(cat));
+        return mapToResponse(categoriesRepository.save(category));
     }
 
     @Override
-    public void deleteCategory(Integer id) {
-        Category cat = categoriesRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+    public void deleteCategory(Integer storeId, Integer categoryId) {
+        Category category = categoriesRepository.findByCategoryIdAndStore_StoreIdAndDeleted(categoryId, storeId, 0)
+                .orElseThrow(() -> new RuntimeException("Category not found or does not belong to your store"));
 
-        cat.setDeleted(1);
-        categoriesRepository.save(cat);
+        category.setDeleted(1);
+        categoriesRepository.save(category);
     }
 
-    private CategoryResponse mapToResponse(Category cat) {
-        CategoryResponse res = new CategoryResponse();
-        res.setCategoryId(cat.getCategoryId());
-        res.setName(cat.getName());
-        res.setDescription(cat.getDescription());
-        return res;
+    private CategoryResponse mapToResponse(Category category) {
+        CategoryResponse response = new CategoryResponse();
+        response.setCategoryId(category.getCategoryId());
+        response.setName(category.getName());
+        response.setDescription(category.getDescription());
+        return response;
     }
 }
+

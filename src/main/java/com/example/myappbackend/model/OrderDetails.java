@@ -30,4 +30,6 @@ public class OrderDetails {
 
     @Column(name = "customization", columnDefinition = "TEXT")
     private String customization;
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted;
 }

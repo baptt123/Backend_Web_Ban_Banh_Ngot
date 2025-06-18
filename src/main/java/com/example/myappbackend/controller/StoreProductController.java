@@ -1,6 +1,5 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.dto.DTO.StoreDTO;
 import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.model.Products;
@@ -10,99 +9,28 @@ import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.StoreRepository;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.service.impl.JwtService;
-import com.example.myappbackend.service.impl.StoreProductServiceImpl;
-import com.example.myappbackend.service.interfaceservice.StoreProductService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.Jar;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.jose.JwaAlgorithm;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/store/products")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 public class StoreProductController {
+
     @Autowired
     private final UserRepository userRepository;
-    @Autowired
-    private final StoreProductService storeProductService;
-    @Autowired
-    private final StoreRepository storeRepository;
-    @Autowired
-    private final ProductRepository productRepository;
-    @Autowired
-    private final JwtService jwtService;
-    @Autowired
-    private final StoreProductServiceImpl storeProductServiceImpl;
-
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @GetMapping("/all-products")
-    public ResponseEntity<List<ProductResponse>> getAllProducts(HttpServletRequest request) {
-        User user = getUserFromRequest(request);
-
-        Stores store = storeRepository.findByManager(user)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng của người quản lý"));
-
-        List<ProductResponse> products = storeProductService.getAllProductsByStore(store.getStoreId());
-
-        return ResponseEntity.ok(products);
-    }
-
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request) {
-        return ResponseEntity.ok(storeProductService.createProduct(request));
-    }
-
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @PutMapping("/{id}")
-    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Integer id,
-                                                         @RequestBody ProductRequest request) {
-        return ResponseEntity.ok(storeProductService.updateProduct(id, request));
-    }
-
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Integer id) {
-        storeProductService.deleteProduct(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @GetMapping("/my-store")
-    public ResponseEntity<?> getMyStore(HttpServletRequest request) {
-        String token = Arrays.stream(request.getCookies())
-                .filter(c -> c.getName().equals("access_token"))
-                .findFirst()
-                .map(Cookie::getValue)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
-
-        String username = jwtService.extractUsername(token);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (!user.getRole().getName().equals("MANAGER")) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Không có quyền truy cập cửa hàng");
-        }
-
-        Stores store = storeRepository.findByManager(user)
-                .orElseThrow(() -> new RuntimeException("Store not found"));
-
-        StoreDTO storeDTO = storeProductServiceImpl.convertToDTO(store);
-        return ResponseEntity.ok(storeDTO);
-    }
+    @Autowired private final StoreRepository storeRepository;
+    @Autowired private final ProductRepository productRepository;
+    @Autowired private final JwtService jwtService;
 
     private User getUserFromRequest(HttpServletRequest request) {
         String token = Arrays.stream(request.getCookies())
@@ -110,10 +38,85 @@ public class StoreProductController {
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElseThrow(() -> new RuntimeException("Token not found"));
-
         String username = jwtService.extractUsername(token);
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    private Stores getStoreByUser(User user) {
+        return storeRepository.findByManager(user)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy cửa hàng của người quản lý"));
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @GetMapping("/all-products")
+    public ResponseEntity<List<ProductResponse>> getAllProducts(HttpServletRequest request) {
+        User user = getUserFromRequest(request);
+        Stores store = getStoreByUser(user);
+        List<ProductResponse> products = productRepository.findByStore_StoreIdAndDeletedFalse(store.getStoreId())
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+        return ResponseEntity.ok(products);
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @PostMapping
+    public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request, HttpServletRequest httpRequest) {
+        User user = getUserFromRequest(httpRequest);
+        Stores store = getStoreByUser(user);
+        Products product = new Products();
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setDescription(request.getDescription());
+        product.setStore(store);
+        product.setDeleted(false);
+        productRepository.save(product);
+        return ResponseEntity.ok(convertToResponse(product));
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductResponse> updateProduct(@PathVariable Integer id,
+                                                         @RequestBody ProductRequest request,
+                                                         HttpServletRequest httpRequest) {
+        User user = getUserFromRequest(httpRequest);
+        Stores store = getStoreByUser(user);
+        Products product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+        if (!product.getStore().getStoreId().equals(store.getStoreId()) || product.isDeleted())
+            throw new RuntimeException("Không có quyền cập nhật sản phẩm");
+
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setDescription(request.getDescription());
+        productRepository.save(product);
+        return ResponseEntity.ok(convertToResponse(product));
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Integer id, HttpServletRequest httpRequest) {
+        User user = getUserFromRequest(httpRequest);
+        Stores store = getStoreByUser(user);
+        Products product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm"));
+
+        if (!product.getStore().getStoreId().equals(store.getStoreId()) || product.isDeleted())
+            throw new RuntimeException("Không có quyền xóa sản phẩm");
+
+        product.setDeleted(true);
+        productRepository.save(product);
+        return ResponseEntity.noContent().build();
+    }
+
+    private ProductResponse convertToResponse(Products product) {
+        return ProductResponse.builder()
+                .productId(product.getProductId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .description(product.getDescription())
+                .build();
+    }
 }

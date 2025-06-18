@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface StorePromotionRepository extends JpaRepository<StorePromotions, Integer> {
     List<StorePromotions> findByStore_StoreId(Integer storeId);
+    List<StorePromotions> findByPromotion_PromotionId(Integer promotionId);
 }

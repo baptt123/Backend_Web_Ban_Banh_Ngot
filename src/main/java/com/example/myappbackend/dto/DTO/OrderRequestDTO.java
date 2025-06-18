@@ -11,4 +11,5 @@ public class OrderRequestDTO {
     private BigDecimal totalAmount;
     private OrderStatus status;
     private PaymentMethod paymentMethod;
+    private boolean deleted;
 }

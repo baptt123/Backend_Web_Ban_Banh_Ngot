@@ -27,4 +27,6 @@ public class Comment {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name="deleted", nullable = false)
+    private boolean deleted = false;
 }

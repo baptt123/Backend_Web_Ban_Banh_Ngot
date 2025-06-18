@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RevenueService {
-    RevenueStatisticsResponse getWeeklyRevenue(LocalDateTime startDate);
-    RevenueStatisticsResponse getMonthlyRevenue(LocalDateTime startDate);
-    RevenueStatisticsResponse getYearlyRevenue(Integer year);
-    List<RevenueStatisticsResponse> getRevenueHistory(String period, LocalDateTime startDate, LocalDateTime endDate);
-    List<ProductRevenueDTO> getRevenueByProducts(LocalDateTime startDate, LocalDateTime endDate);
+    RevenueStatisticsResponse getWeeklyRevenue(LocalDateTime startDate,int storeId);
+    RevenueStatisticsResponse getMonthlyRevenue(LocalDateTime startDate,int storeId);
+    RevenueStatisticsResponse getYearlyRevenue(Integer year,int storeId);
+    List<RevenueStatisticsResponse> getRevenueHistory(String period, LocalDateTime startDate, LocalDateTime endDate,int storeId);
+    List<ProductRevenueDTO> getRevenueByProducts(LocalDateTime startDate, LocalDateTime endDate,int storeId);
 }

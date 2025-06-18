@@ -17,4 +17,5 @@ public class OrderResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<OrderDetailResponseDTO> orderDetails;
+    private boolean deleted;
 }

@@ -19,24 +19,36 @@ import java.util.Optional;
 @Repository
 public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     List<Orders> findByStore(Stores store);
-    List<Orders> findByStoreStoreId(Integer storeId);
+
+    List<Orders> findByStoreId(Integer storeId);
+
     @Query("SELECT SUM(o.totalAmount), COUNT(o) FROM Orders o " +
             "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
-            "AND o.status = :status")
+            "AND o.status = :status" +
+            " AND o.store.storeId = :storeId")
     List<Object[]> calculateRevenue(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
-            @Param("status") OrderStatus status
+            @Param("status") OrderStatus status,
+            @Param("storeId") Integer storeId
     );
 
     @Query("SELECT new com.example.myappbackend.dto.DTO.ProductRevenueDTO(p.productId, p.name, SUM(od.price * od.quantity), SUM(od.quantity)) " +
             "FROM Orders o " +
             "JOIN o.orderDetails od " +
             "JOIN od.product p " +
-            "WHERE o.createdAt BETWEEN ?1 AND ?2 " +
-            "AND o.status = ?3 " +
+            "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
+            "AND o.status = :status " +
+            "AND o.store.storeId = :storeId " +
             "GROUP BY p.productId, p.name")
-    List<ProductRevenueDTO> getRevenueByProducts(LocalDateTime startDate, LocalDateTime endDate, OrderStatus status);
+    List<ProductRevenueDTO> getRevenueByProducts(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            @Param("status") OrderStatus status,
+            @Param("storeId") Integer storeId
+    );
+
+
     // --- Thêm phương thức này để tìm đơn hàng theo PayPal Order ID ---
     Optional<Orders> findByPaypalOrderId(String paypalOrderId);
     // -----------------------------------------------------------------
@@ -44,4 +56,6 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     // Giữ lại phương thức này nếu bạn vẫn cần nó cho mục đích test khác
     Optional<Orders> findTopByStatusOrderByCreatedAtDesc(OrderStatus status);
 
+    @Query("UPDATE Orders o SET o.deleted = :deleted WHERE o.orderId = :orderId")
+    void updateOrderDeletedStatus(@Param("orderId") Integer orderId, @Param("deleted") boolean deleted);
 }

@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderResponse placeOrder(OrderRequest  orderRequestDTO) {
+    public OrderResponse placeOrder(OrderRequest orderRequestDTO) {
         User user = userRepository.findById(orderRequestDTO.getUserId())
                 .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy người dùng với ID: " + orderRequestDTO.getUserId()));
 
@@ -53,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal total = BigDecimal.ZERO;
         List<OrderDetails> orderDetailsList = new ArrayList<>();
 
-        for (OrderRequest.OrderItemDTO item :orderRequestDTO.getItems()) {
+        for (OrderRequest.OrderItemDTO item : orderRequestDTO.getItems()) {
             Products product = productRepository.findById(item.getProductId())
                     .orElseThrow(() -> new OrderNotCreateException("Không tìm thấy sản phẩm với ID: " + item.getProductId()));
 
@@ -142,8 +142,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponseDTO> getAllOrdersByStore() {
-        return ordersRepository.findByStoreStoreId(1).stream().map(this::mapToResponse).collect(Collectors.toList());
+    public List<OrderResponseDTO> getAllOrdersByStore(Integer storeId) {
+        return ordersRepository.findByStoreId(storeId).stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -179,6 +179,14 @@ public class OrderServiceImpl implements OrderService {
     public void deleteOrder(Integer orderId) {
         Orders order = ordersRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         ordersRepository.delete(order);
+    }
+
+    public void deleteOrderByDeletedStatus(Integer orderId, boolean deleted) {
+        if (deleted) {
+            ordersRepository.updateOrderDeletedStatus(orderId, true);
+        } else {
+            ordersRepository.updateOrderDeletedStatus(orderId, false);
+        }
     }
 
     private OrderResponseDTO mapToResponse(Orders order) {
