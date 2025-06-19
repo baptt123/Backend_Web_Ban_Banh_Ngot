@@ -2,9 +2,12 @@ package com.example.myappbackend.controller;
 
 import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.exception.ResourceNotFoundException;
+import com.example.myappbackend.model.Category;
 import com.example.myappbackend.model.Products;
 import com.example.myappbackend.model.Stores;
 import com.example.myappbackend.model.User;
+import com.example.myappbackend.repository.CategoriesRepository;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.StoreRepository;
 import com.example.myappbackend.repository.UserRepository;
@@ -31,6 +34,7 @@ public class StoreProductController {
     @Autowired private final StoreRepository storeRepository;
     @Autowired private final ProductRepository productRepository;
     @Autowired private final JwtService jwtService;
+    @Autowired private final CategoriesRepository categoryRepository;
 
     private User getUserFromRequest(HttpServletRequest request) {
         String token = Arrays.stream(request.getCookies())
@@ -61,7 +65,7 @@ public class StoreProductController {
     }
 
     @PreAuthorize("hasAuthority('MANAGER')")
-    @PostMapping
+    @PostMapping("/create-product")
     public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest request, HttpServletRequest httpRequest) {
         User user = getUserFromRequest(httpRequest);
         Stores store = getStoreByUser(user);
@@ -69,7 +73,12 @@ public class StoreProductController {
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setDescription(request.getDescription());
+        product.setStock(request.getQuantity());
+        product.setImageUrl(request.getImageUrl());
         product.setStore(store);
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+        product.setCategory(category);
         product.setDeleted(false);
         productRepository.save(product);
         return ResponseEntity.ok(convertToResponse(product));
