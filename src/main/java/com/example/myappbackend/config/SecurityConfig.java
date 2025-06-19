@@ -18,7 +18,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -86,12 +85,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/comments/**").permitAll()
                                 .requestMatchers("/api/ratings/**").permitAll()
-                                .requestMatchers("/api/products/getproducts").permitAll()
+                                .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").permitAll()
-                                .requestMatchers("/api/store/**").hasAuthority("MANAGER")
+                                .requestMatchers("/api/store/**").permitAll()
                                 .requestMatchers("/api/orders/**").permitAll()
                                 .requestMatchers("/api/complaints/**").permitAll()
-                                .requestMatchers("/api/profile/me").authenticated()
+                                .requestMatchers("/api/categories/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -120,8 +119,4 @@ public class SecurityConfig {
         return source;
 
     }
-//    @Bean
-//    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
-//        return new GrantedAuthorityDefaults(""); // Remove the ROLE_ prefix
-//    }
 }

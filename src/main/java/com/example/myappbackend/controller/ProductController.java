@@ -1,12 +1,18 @@
 package com.example.myappbackend.controller;
 
+import com.example.myappbackend.dto.DTO.CategoryWithImageDTO;
 import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.service.interfaceservice.CategoriesService;
 import com.example.myappbackend.service.interfaceservice.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -16,12 +22,8 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    @GetMapping
-//    @PreAuthorize("hasRole('CUSTOMER') or hasRole('MANAGER') or hasRole('ADMIN')")
-    public ResponseEntity<?> getAllProducts() {
-        // To do...
-        return ResponseEntity.ok("Danh sách sản phẩm");
-    }
+    @Autowired
+    private CategoriesService categoriesService;
 
     @PostMapping
     @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
@@ -40,5 +42,20 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> getProducts() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
+
+    @GetMapping
+    public Page<ProductResponse> getProducts(
+            @RequestParam(required = false) Integer storeId,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(defaultValue = "0") int page,       // trang hiện tại (bắt đầu từ 0)
+            @RequestParam(defaultValue = "12") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productService.getProducts(storeId, categoryId, minPrice, maxPrice,pageable);
+    }
+
+
 }
 
