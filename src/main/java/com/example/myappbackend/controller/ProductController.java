@@ -1,6 +1,7 @@
 package com.example.myappbackend.controller;
 
 import com.example.myappbackend.dto.DTO.CategoryWithImageDTO;
+import com.example.myappbackend.dto.response.ProductDetailsResponse;
 import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.service.interfaceservice.CategoriesService;
 import com.example.myappbackend.service.interfaceservice.ProductService;
@@ -54,6 +55,12 @@ public class ProductController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return productService.getProducts(storeId, categoryId, minPrice, maxPrice,pageable);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDetailsResponse> getProductDetail(@PathVariable Integer id) {
+        ProductDetailsResponse response = productService.getProductDetail(id);
+        return ResponseEntity.ok(response);
     }
 
 
