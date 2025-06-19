@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface PromotionRepository extends JpaRepository<Promotions, Integer> {
-    List<Promotions> findByStore_StoreIdAndDeleted(Integer storeId, Integer deleted);
+
 
 }

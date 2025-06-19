@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "promotions")
@@ -33,4 +34,6 @@ public class Promotions {
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
+    @Column(name="deleted", nullable = false)
+    private boolean deleted=false;
 }

@@ -143,7 +143,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDTO> getAllOrdersByStore(Integer storeId) {
-        return ordersRepository.findByStoreId(storeId).stream().map(this::mapToResponse).collect(Collectors.toList());
+        return ordersRepository.findByStore_StoreId(storeId).stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     @Override

@@ -15,6 +15,7 @@ import com.example.myappbackend.service.interfaceservice.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,7 @@ public class PromotionServiceImpl implements PromotionService {
     private final StorePromotionRepository storePromotionsRepository;
     private final JwtService jwtService;
     private final UserRepository userRepository;
+
     @Override
     public PromotionResponse createPromotion(PromotionRequest request, Integer storeId, String token) {
         Stores store = storeRepository.findById(storeId)
@@ -75,7 +77,7 @@ public class PromotionServiceImpl implements PromotionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
 
         // Cách đơn giản: xóa record liên kết (StorePromotions) nếu cần
-        List<StorePromotions> links = storePromotionsRepository.findByPromotion_PromotionId(id);
+        List<StorePromotions> links = storePromotionsRepository.findStorePromotionsByPromotionId(id);
         storePromotionsRepository.deleteAll(links);
 
         promotionRepository.delete(promotion);
@@ -90,11 +92,31 @@ public class PromotionServiceImpl implements PromotionService {
 
     @Override
     public List<PromotionResponse> getAllPromotions(Integer storeId) {
-        return storePromotionsRepository.findByStore_StoreId(storeId).stream()
-                .map(StorePromotions::getPromotion)
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        List<StorePromotions> storePromotionsList = storePromotionsRepository.findByStore_StoreId(storeId);
+        List<PromotionResponse> responseList = new ArrayList<>();
+
+        for (StorePromotions sp : storePromotionsList) {
+            Promotions promotion = sp.getPromotion();
+
+            // Kiểm tra trạng thái deleted nếu có field này
+            if (promotion.isDeleted()) {
+                PromotionResponse response = new PromotionResponse();
+                response.setPromotionId(promotion.getPromotionId());
+                response.setName(promotion.getName());
+                response.setDescription(promotion.getDescription());
+                response.setDiscountPercentage(promotion.getDiscountPercentage());
+                response.setStartDate(promotion.getStartDate());
+                response.setEndDate(promotion.getEndDate());
+
+                responseList.add(response);
+            }
+        }
+
+        return responseList;
     }
+
+
+
 
     private PromotionResponse toResponse(Promotions promotion) {
         PromotionResponse response = new PromotionResponse();

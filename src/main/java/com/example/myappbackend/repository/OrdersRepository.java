@@ -20,7 +20,7 @@ import java.util.Optional;
 public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     List<Orders> findByStore(Stores store);
 
-    List<Orders> findByStoreId(Integer storeId);
+    List<Orders> findByStore_StoreId(Integer storeId);
 
     @Query("SELECT SUM(o.totalAmount), COUNT(o) FROM Orders o " +
             "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
