@@ -77,18 +77,19 @@ public class PromotionServiceImpl implements PromotionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
 
         // Cách đơn giản: xóa record liên kết (StorePromotions) nếu cần
-        List<StorePromotions> links = storePromotionsRepository.findStorePromotionsByPromotionId(id);
-        storePromotionsRepository.deleteAll(links);
-
+//        List<StorePromotions> links = storePromotionsRepository.findStorePromotionsByPromotionId(id);
+//        storePromotionsRepository.deleteAll(links);
+        promotion.setDeleted(true); // 👈 Gán true để đánh dấu đã xóa
+        promotionRepository.save(promotion);
         promotionRepository.delete(promotion);
     }
 
-    @Override
-    public PromotionResponse getPromotionById(Integer id) {
-        Promotions promotion = promotionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
-        return toResponse(promotion);
-    }
+//    @Override
+//    public PromotionResponse getPromotionById(Integer id) {
+//        Promotions promotion = promotionRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("Promotion not found"));
+//        return toResponse(promotion);
+//    }
 
     @Override
     public List<PromotionResponse> getAllPromotions(Integer storeId) {
@@ -99,7 +100,7 @@ public class PromotionServiceImpl implements PromotionService {
             Promotions promotion = sp.getPromotion();
 
             // Kiểm tra trạng thái deleted nếu có field này
-            if (promotion.isDeleted()) {
+            if (!promotion.isDeleted()) {
                 PromotionResponse response = new PromotionResponse();
                 response.setPromotionId(promotion.getPromotionId());
                 response.setName(promotion.getName());

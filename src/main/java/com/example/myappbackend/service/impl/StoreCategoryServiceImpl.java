@@ -21,30 +21,25 @@ public class StoreCategoryServiceImpl implements StoreCategoryService {
     private final StoreRepository storeRepository;
 
     @Override
-    public List<CategoryResponse> getAllCategoriesByStore(Integer storeId) {
-        return categoriesRepository.findByStore_StoreIdAndDeleted(storeId, 0)
+    public List<CategoryResponse> getAllCategories() {
+        return categoriesRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public CategoryResponse createCategory(Integer storeId, CategoryRequest request) {
-        Stores store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new RuntimeException("Store not found"));
-
+    public CategoryResponse createCategory(CategoryRequest request) {
         Category category = new Category();
         category.setName(request.getName());
         category.setDescription(request.getDescription());
-        category.setStore(store);
         category.setDeleted(0);
-
         return mapToResponse(categoriesRepository.save(category));
     }
 
     @Override
-    public CategoryResponse updateCategory(Integer storeId, Integer categoryId, CategoryRequest request) {
-        Category category = categoriesRepository.findByCategoryIdAndStore_StoreIdAndDeleted(categoryId, storeId, 0)
+    public CategoryResponse updateCategory(Integer categoryId, CategoryRequest request) {
+        Category category = categoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found or does not belong to your store"));
 
         category.setName(request.getName());
@@ -54,8 +49,8 @@ public class StoreCategoryServiceImpl implements StoreCategoryService {
     }
 
     @Override
-    public void deleteCategory(Integer storeId, Integer categoryId) {
-        Category category = categoriesRepository.findByCategoryIdAndStore_StoreIdAndDeleted(categoryId, storeId, 0)
+    public void deleteCategory(Integer categoryId) {
+        Category category = categoriesRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found or does not belong to your store"));
 
         category.setDeleted(1);

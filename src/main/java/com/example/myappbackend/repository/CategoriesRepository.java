@@ -12,8 +12,8 @@ import java.util.Optional;
 @Repository
 public interface CategoriesRepository extends JpaRepository<Category, Integer> {
 //    List<Category> findByStore_StoreIdAndDeleted(int storeId, int deleted);
-    List<Category> findByStore_StoreIdAndDeleted(Integer storeId, Integer deleted);
-    Optional<Category> findByCategoryIdAndStore_StoreIdAndDeleted(Integer categoryId, Integer storeId, Integer deleted);
+//    List<Category> findByStore_StoreIdAndDeleted(Integer storeId, Integer deleted);
+//    Optional<Category> findByCategoryIdAndStore_StoreIdAndDeleted(Integer categoryId, Integer storeId, Integer deleted);
     @Query("SELECT new com.example.myappbackend.dto.DTO.CategoryWithImageDTO(" +
             "c.categoryId, c.name, " +
             "MIN(p.imageUrl)" +

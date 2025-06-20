@@ -29,34 +29,31 @@ public class StoreCategoryController {
     private final UserRepository userRepository;
     private final StoreRepository storeRepository;
 
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/get-all-categories")
     public ResponseEntity<List<CategoryResponse>> getAll(HttpServletRequest request) {
         Integer storeId = getStoreIdFromRequest(request);
-        return ResponseEntity.ok(storeCategoryService.getAllCategoriesByStore(storeId));
+        return ResponseEntity.ok(storeCategoryService.getAllCategories());
     }
 
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @PostMapping
-    public ResponseEntity<CategoryResponse> create(@RequestBody CategoryRequest request, HttpServletRequest httpRequest) {
-        Integer storeId = getStoreIdFromRequest(httpRequest);
-        return ResponseEntity.ok(storeCategoryService.createCategory(storeId, request));
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/create-category")
+    public ResponseEntity<CategoryResponse> create(@RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(storeCategoryService.createCategory(request));
     }
 
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PutMapping("/{id}/update-category")
     public ResponseEntity<CategoryResponse> update(@PathVariable Integer id,
-                                                   @RequestBody CategoryRequest request,
-                                                   HttpServletRequest httpRequest) {
-        Integer storeId = getStoreIdFromRequest(httpRequest);
-        return ResponseEntity.ok(storeCategoryService.updateCategory(storeId, id, request));
+                                                   @RequestBody CategoryRequest request
+                                                  ) {
+        return ResponseEntity.ok(storeCategoryService.updateCategory(id, request));
     }
 
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Integer id, HttpServletRequest request) {
-        Integer storeId = getStoreIdFromRequest(request);
-        storeCategoryService.deleteCategory(storeId, id);
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @DeleteMapping("/{id}/delete-category")
+    public ResponseEntity<Void> delete(@PathVariable Integer id) {
+        storeCategoryService.deleteCategory(id);
         return ResponseEntity.noContent().build();
     }
 

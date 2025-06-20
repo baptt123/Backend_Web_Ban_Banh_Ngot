@@ -61,12 +61,12 @@ public class OrderController {
 //    public ResponseEntity<OrderResponseDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderRequestDTO request) {
 //        return ResponseEntity.ok(orderService.updateOrder(id, request));
 //    }
-    @PreAuthorize("hasAuthority('MANAGER')")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
-        orderService.deleteOrderByDeletedStatus(id, true);
-        return ResponseEntity.noContent().build();
-    }
+//    @PreAuthorize("hasAuthority('MANAGER')")
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
+//        orderService.deleteOrderByDeletedStatus(id, true);
+//        return ResponseEntity.noContent().build();
+//    }
     private Integer getStoreIdFromRequest(HttpServletRequest request) {
         String token = Arrays.stream(request.getCookies())
                 .filter(c -> c.getName().equals("access_token"))
@@ -83,5 +83,13 @@ public class OrderController {
 
         return store.getStoreId();
     }
-
+    @PreAuthorize("hasAuthority('MANAGER')")
+    @PutMapping("/{id}/update-status")
+    public ResponseEntity<OrderResponseDTO> updateOrderStatus(
+            @PathVariable("id") Integer orderId,
+            @RequestBody OrderRequestDTO request
+    ) {
+        OrderResponseDTO updatedOrder = orderService.updateOrder(orderId, request);
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

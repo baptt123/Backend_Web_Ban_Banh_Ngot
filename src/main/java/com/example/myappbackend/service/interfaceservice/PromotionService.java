@@ -9,6 +9,6 @@ public interface PromotionService {
     PromotionResponse createPromotion(PromotionRequest request, Integer storeId,String token);
     PromotionResponse updatePromotion(Integer id, PromotionRequest request);
     void deletePromotion(Integer id);
-    PromotionResponse getPromotionById(Integer id);
+//    PromotionResponse getPromotionById(Integer id);
     List<PromotionResponse> getAllPromotions(Integer storeId);
 }
