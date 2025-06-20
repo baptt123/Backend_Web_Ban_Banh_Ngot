@@ -1,12 +1,14 @@
 package com.example.myappbackend.service.interfaceservice;
 
-import com.example.myappbackend.dto.request.RatingRequest;
-import com.example.myappbackend.dto.response.RatingResponse;
+import com.example.myappbackend.dto.DTO.RatingRequestDTO;
+import com.example.myappbackend.dto.RatingResponseDTO;
 
 import java.util.List;
 
 public interface RatingService {
-    RatingResponse addRating(RatingRequest request);
-    List<RatingResponse> getAllRatings();
-    RatingResponse updateRating(RatingRequest request);
+    void addRating(RatingRequestDTO request, String token);
+    void updateRating(RatingRequestDTO request, String token);
+    List<RatingResponseDTO> getRatingsByProductId(Integer productId);
+    List<RatingResponseDTO> getAllRatings();
 }
+

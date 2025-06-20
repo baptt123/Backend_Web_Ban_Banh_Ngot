@@ -6,8 +6,8 @@ import com.example.myappbackend.dto.response.CategoryResponse;
 import java.util.List;
 
 public interface StoreCategoryService {
-    List<CategoryResponse> getAllCategoriesByStore(Integer storeId);
+    List<CategoryResponse> getAllCategories();
     CategoryResponse createCategory(CategoryRequest request);
-    CategoryResponse updateCategory(Integer id, CategoryRequest request);
-    void deleteCategory(Integer id);
+    CategoryResponse updateCategory(Integer categoryId, CategoryRequest request);
+    void deleteCategory(Integer categoryId);
 }

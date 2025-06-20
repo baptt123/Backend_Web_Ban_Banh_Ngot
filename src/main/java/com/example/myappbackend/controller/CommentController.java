@@ -1,12 +1,12 @@
 package com.example.myappbackend.controller;
 
-
+import com.example.myappbackend.dto.CommentResponseDTO;
 import com.example.myappbackend.dto.DTO.CommentRequestDTO;
-import com.example.myappbackend.dto.DTO.CommentResponseDTO;
-import com.example.myappbackend.dto.request.CommentRequest;
-import com.example.myappbackend.dto.response.CommentResponse;
 import com.example.myappbackend.service.interfaceservice.CommentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,77 +14,39 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/comments")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class CommentController {
 
-    @Autowired
-    private CommentService commentService;
+    private final CommentService commentService;
 
-    /*
-    This endpoint is used to create a comment for a product by a user.
-     */
-    @PostMapping("/addcomment")
-    public CommentResponse createComment(@RequestBody CommentRequest request) {
-        return commentService.createComment(request);
-    }
-
-    /*
-    This endpoint is used to get all comments for user
-     */
-    @GetMapping("/comments")
-    public List<CommentResponse> getAllComments() {
-        return commentService.getAllComments();
-    }
-
-    /*
-    This endpoint is used to delete a comment by its ID(user).
-     */
-    @DeleteMapping("/deletecomment/{id}")
-    public void deleteComment(@PathVariable Integer id) {
-        commentService.deleteComment(id);
-    }
-
-    /*
-    This endpoint is used to create a comment (management by store).
-     */
-    @PreAuthorize("MANAGER")
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
     @PostMapping
-    public CommentResponseDTO createComment(@RequestBody CommentRequestDTO dto) {
-        return commentService.createComment(dto);
+    public ResponseEntity<?> addComment(@RequestBody CommentRequestDTO request, HttpServletRequest httpRequest) {
+        String token = extractTokenFromCookie(httpRequest);
+        commentService.addComment(request, token);
+        return ResponseEntity.ok("Comment added successfully");
     }
 
-    /*
-        This endpoint is used to get all comments for a specific product.
-        It takes the product ID as a path variable and returns a list of comments(management by store).
-     */
-//    @GetMapping("/product/{productId}")
-//    public List<CommentResponseDTO> getCommentsByProduct(@PathVariable Integer productId) {
-//        return commentService.getCommentsByProductId(productId);
-//    }
-    @PreAuthorize("MANAGER")
-    @GetMapping("/comments-store")
-    public List<CommentResponse> getAllCommentsStore() {
-        return commentService.getAllComments();
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<CommentResponseDTO>> getCommentsByProduct(@PathVariable Integer productId) {
+        return ResponseEntity.ok(commentService.getCommentsByProductId(productId));
     }
 
-    /*
-        This endpoint is used to update a comment by its ID (management by store).
-        It takes the comment ID as a path variable and the updated comment data in the request body.
-        It returns the updated comment.(management by store).
-     */
-    @PreAuthorize("MANAGER")
-    @PutMapping("/{commentId}")
-    public CommentResponseDTO updateComment(@PathVariable Integer commentId,
-                                            @RequestBody CommentRequestDTO dto) {
-        return commentService.updateComment(commentId, dto);
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @GetMapping("/all-comments")
+    public ResponseEntity<List<CommentResponseDTO>> getAllComments() {
+        return ResponseEntity.ok(commentService.getAllComments());
     }
 
-    /*
-        This endpoint is used to delete a comment by its ID (management by store).
-     */
-    @PreAuthorize("MANAGER")
-    @DeleteMapping("/{commentId}")
-    public void deleteCommentManagement(@PathVariable Integer commentId) {
-        commentService.deleteComment(commentId);
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if (cookie.getName().equals("access_token")) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 }

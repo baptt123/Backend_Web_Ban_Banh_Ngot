@@ -1,8 +1,13 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.model.User;
+import com.example.myappbackend.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -26,13 +32,14 @@ public class JwtService {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
-
+    @Autowired
+    private UserRepository userRepository;
     public String generateToken(UserDetails userDetails) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         List<String> roles = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
+                .map(role -> role.startsWith("ROLE_") ? role.substring(5) : role)  // <-- cắt tiền tố ROLE_
                 .collect(Collectors.toList());
-
         return Jwts.builder()
                 .setSubject(userDetails.getUsername())
                 .claim("roles", roles) // Thêm roles vào payload
@@ -42,10 +49,10 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails);
-    }
+//    public String generateToken(Authentication authentication) {
+//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//        return generateToken(userDetails);
+//    }
 
     public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
@@ -67,14 +74,33 @@ public class JwtService {
         return true;
     }
 
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-
-        return username.equals(userDetails.getUsername());
+//    public boolean validateToken(String token, UserDetails userDetails) {
+//        String username = Jwts.parserBuilder()
+//                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+//                .build()
+//                .parseClaimsJws(token)
+//                .getBody()
+//                .getSubject();
+//
+//        return username.equals(userDetails.getUsername());
+//    }
+private String extractJwtFromCookies(HttpServletRequest request) {
+    if (request.getCookies() == null) return null;
+    for (Cookie cookie : request.getCookies()) {
+        if ("access_token".equals(cookie.getName())) {
+            return cookie.getValue();
+        }
+    }
+    return null;
+}
+    public User getUserFromRequest(HttpServletRequest request) {
+        String token = Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals("access_token"))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+        String username = extractUsername(token);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

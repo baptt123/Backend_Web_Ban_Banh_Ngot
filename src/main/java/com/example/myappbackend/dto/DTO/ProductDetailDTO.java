@@ -1,16 +1,12 @@
-package com.example.myappbackend.dto.response;
+package com.example.myappbackend.dto.DTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
+
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-public class ProductResponse {
+public class ProductDetailDTO {
     private Integer productId;
     private String name;
     private String description;
@@ -18,5 +14,6 @@ public class ProductResponse {
     private Integer stock;
     private String imageUrl;
     private String categoryName;
-    private int deleted;
+    private List<StoreShortDTO> stores;
 }
+

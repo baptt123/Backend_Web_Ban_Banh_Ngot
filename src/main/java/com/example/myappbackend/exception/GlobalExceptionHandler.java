@@ -246,5 +246,13 @@ public class GlobalExceptionHandler {
             return new ErrorResponse(status, code, message);
         }
     }
-
+//    @ExceptionHandler(BadCredentialsException.class)
+//    public ResponseEntity<?> handleBadCredentials(BadCredentialsException e) {
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+//    }
+//
+//    @ExceptionHandler(RuntimeException.class)
+//    public ResponseEntity<?> handleRuntime(RuntimeException e) {
+//        return ResponseEntity.badRequest().body(e.getMessage());
+//    }
 }

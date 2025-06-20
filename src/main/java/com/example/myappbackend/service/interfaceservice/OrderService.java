@@ -11,7 +11,7 @@ import java.util.List;
 public interface OrderService {
     OrderResponse placeOrder(OrderRequest orderRequestDTO);
     List<OrderHistoryResponse> getAllOrders();
-    List<OrderResponseDTO> getAllOrdersByStore();
+    List<OrderResponseDTO> getAllOrdersByStore(Integer storeId);
     OrderResponseDTO getOrderById(Integer orderId);
     OrderResponseDTO createOrder(OrderRequestDTO request);
     OrderResponseDTO updateOrder(Integer orderId, OrderRequestDTO request);

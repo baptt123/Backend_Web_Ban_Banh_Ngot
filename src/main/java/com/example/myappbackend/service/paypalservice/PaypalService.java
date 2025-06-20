@@ -13,9 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Base64;
 import java.util.List;
-
 
 @Service
 public class PaypalService {
@@ -27,27 +25,26 @@ public class PaypalService {
     private String clientSecret;
 
     @Value("${paypal.mode}")
-    private String mode="Sandbox"; // or "Live"
+    private String mode = "sandbox"; // default
 
     private final RestTemplate restTemplate = new RestTemplate();
 
     private String getBaseUrl() {
-        return "Live".equalsIgnoreCase(mode) ?
-                "https://api-m.paypal.com" :
-                "https://api-m.sandbox.paypal.com";
+        return "live".equalsIgnoreCase(mode)
+                ? "https://api-m.paypal.com"
+                : "https://api-m.sandbox.paypal.com";
     }
 
     private AuthResponse authenticate() {
-        String credentials = Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes());
-
         HttpHeaders headers = new HttpHeaders();
-        headers.setBasicAuth(credentials);
+        headers.setBasicAuth(clientId, clientSecret);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("grant_type", "client_credentials");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
+
         ResponseEntity<AuthResponse> response = restTemplate.exchange(
                 getBaseUrl() + "/v1/oauth2/token",
                 HttpMethod.POST,
@@ -67,8 +64,9 @@ public class PaypalService {
 
         CreateOrderRequest requestBody = new CreateOrderRequest();
         requestBody.setIntent("CAPTURE");
-        PurchaseUnit unit = new PurchaseUnit(reference, new Amount(currency, value));
-        requestBody.setPurchase_units(List.of(unit));
+        requestBody.setPurchase_units(List.of(
+                new PurchaseUnit(reference, new Amount(currency, value))
+        ));
 
         HttpEntity<CreateOrderRequest> request = new HttpEntity<>(requestBody, headers);
 

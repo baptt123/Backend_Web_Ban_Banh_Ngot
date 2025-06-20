@@ -12,5 +12,5 @@ public class ProductRequest {
     private Integer quantity;
     private Integer categoryId;
     private String imageUrl;
-    private int deleted;
+    private boolean deleted;
 }

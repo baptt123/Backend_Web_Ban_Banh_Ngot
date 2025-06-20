@@ -51,4 +51,6 @@ public class Orders {
     private String phone;
     @Column(name = "email", length = 150)
     private String email;
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted;
 }

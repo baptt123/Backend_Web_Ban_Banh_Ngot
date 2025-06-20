@@ -1,5 +1,6 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.*;
 import com.example.myappbackend.dto.request.RegisterRequest;
 import com.example.myappbackend.dto.DTO.RoleDTO;
@@ -11,6 +12,7 @@ import com.example.myappbackend.repository.UserProfileRepository;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -248,5 +250,10 @@ public class UserService {
         
         // Send email
         emailService.sendVerificationEmail(user, token);
+    }
+    public User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }

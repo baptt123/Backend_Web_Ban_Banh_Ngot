@@ -1,10 +1,12 @@
 package com.example.myappbackend.service.impl;
 
 import com.example.myappbackend.dto.response.UserResponse;
+import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.service.interfaceservice.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,5 +57,11 @@ public class StoreUserServiceImpl implements UserService {
                     return res;
                 })
                 .collect(Collectors.toList());
+    }
+    //hàm này bị dư,đừng để ý
+    public User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return usersRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 }

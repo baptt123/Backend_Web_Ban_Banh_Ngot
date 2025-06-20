@@ -5,11 +5,11 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class CommentResponseDTO {
+public class RatingResponseDTO {
     private Integer id;
-    private String content;
-    private LocalDateTime createdAt;
+    private Integer rating;
     private String username;
     private String fullName;
     private String avatarUrl;
+    private LocalDateTime createdAt;
 }

@@ -1,92 +1,42 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.CommentResponseDTO;
 import com.example.myappbackend.dto.DTO.CommentRequestDTO;
-import com.example.myappbackend.dto.DTO.CommentResponseDTO;
-import com.example.myappbackend.dto.request.CommentRequest;
-import com.example.myappbackend.dto.response.CommentResponse;
 import com.example.myappbackend.exception.ResourceNotFoundException;
-import com.example.myappbackend.model.Comment;
-import com.example.myappbackend.model.Products;
-import com.example.myappbackend.model.User;
+import com.example.myappbackend.model.*;
 import com.example.myappbackend.repository.CommentRepository;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.UserRepository;
 import com.example.myappbackend.service.interfaceservice.CommentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    @Autowired
-    private CommentRepository commentRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ProductRepository productRepository;
+    private final CommentRepository commentRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final JwtService jwtUtils;
 
     @Override
-    public CommentResponse createComment(CommentRequest request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng"));
+    public void addComment(CommentRequestDTO request, String token) {
+        String username = jwtUtils.extractUsername(token);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Products product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         Comment comment = new Comment();
         comment.setUser(user);
         comment.setProduct(product);
         comment.setContent(request.getContent());
-
-        Comment saved = commentRepository.save(comment);
-        return mapToResponse(saved);
-    }
-
-    @Override
-    public List<CommentResponse> getAllComments() {
-        return commentRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void deleteComment(Integer id) {
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy comment " + id));
-        commentRepository.delete(comment);
-    }
-
-    private CommentResponse mapToResponse(Comment comment) {
-        CommentResponse response = new CommentResponse();
-        response.setId(comment.getId());
-        response.setContent(comment.getContent());
-        response.setUserName(comment.getUser().getUsername());
-        response.setProductId(comment.getProduct().getProductId());
-        response.setCreatedAt(comment.getCreatedAt());
-        return response;
-    }
-
-    @Override
-    public CommentResponseDTO createComment(CommentRequestDTO dto) {
-        Products product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-
-        // Tạm thời dùng userId = 1 để test
-        User user = userRepository.findById(1)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        Comment comment = new Comment();
-        comment.setContent(dto.getContent());
-        comment.setProduct(product);
-        comment.setUser(user);
         commentRepository.save(comment);
-
-        return mapToResponseDTO(comment);
     }
 
     @Override
@@ -94,35 +44,30 @@ public class CommentServiceImpl implements CommentService {
         Products product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
-        return commentRepository.findByProduct(product)
+        return commentRepository.findByProductAndDeletedFalseOrderByCreatedAtDesc(product)
                 .stream()
-                .map(this::mapToResponseDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public CommentResponseDTO updateComment(Integer commentId, CommentRequestDTO dto) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
-
-        comment.setContent(dto.getContent());
-        commentRepository.save(comment);
-        return mapToResponseDTO(comment);
+    public List<CommentResponseDTO> getAllComments() {
+        return commentRepository.findByDeletedFalseOrderByCreatedAtDesc()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public void deleteCommentManagement(Integer commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
-        commentRepository.delete(comment);
-    }
-
-    private CommentResponseDTO mapToResponseDTO(Comment comment) {
+    private CommentResponseDTO convertToDto(Comment comment) {
         CommentResponseDTO dto = new CommentResponseDTO();
         dto.setId(comment.getId());
         dto.setContent(comment.getContent());
-        dto.setUsername(comment.getUser().getUsername());
         dto.setCreatedAt(comment.getCreatedAt());
+
+        User user = comment.getUser();
+        dto.setUsername(user.getUsername());
+        dto.setFullName(user.getUserProfile() != null ? user.getUserProfile().getFullName() : null);
+        dto.setAvatarUrl(user.getUserProfile() != null ? user.getUserProfile().getAvatarUrl() : null);
         return dto;
     }
 }
