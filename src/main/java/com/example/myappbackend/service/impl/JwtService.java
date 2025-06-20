@@ -42,10 +42,10 @@ public class JwtService {
                 .compact();
     }
 
-    public String generateToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return generateToken(userDetails);
-    }
+//    public String generateToken(Authentication authentication) {
+//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//        return generateToken(userDetails);
+//    }
 
     public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()

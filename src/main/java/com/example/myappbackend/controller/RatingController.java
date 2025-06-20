@@ -1,9 +1,12 @@
 package com.example.myappbackend.controller;
 
-import com.example.myappbackend.dto.request.RatingRequest;
-import com.example.myappbackend.dto.response.RatingResponse;
+import com.example.myappbackend.dto.DTO.RatingRequestDTO;
+import com.example.myappbackend.dto.RatingResponseDTO;
 import com.example.myappbackend.service.interfaceservice.RatingService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,24 +15,45 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ratings")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class RatingController {
 
     private final RatingService ratingService;
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
-    @PostMapping("/addratings")
-    public RatingResponse create(@RequestBody RatingRequest request) {
-        return ratingService.addRating(request);
-    }
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
-    @GetMapping("/getratings")
-    public List<RatingResponse> getAll() {
-        return ratingService.getAllRatings();
-    }
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
-    @PutMapping("/updateratings")
-    public RatingResponse update(@RequestBody RatingRequest request) {
-        return ratingService.updateRating(request);
+
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @PostMapping
+    public ResponseEntity<?> addRating(@RequestBody RatingRequestDTO request, HttpServletRequest httpRequest) {
+        String token = extractTokenFromCookie(httpRequest);
+        ratingService.addRating(request, token);
+        return ResponseEntity.ok("Rating added successfully");
     }
 
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @PutMapping
+    public ResponseEntity<?> updateRating(@RequestBody RatingRequestDTO request, HttpServletRequest httpRequest) {
+        String token = extractTokenFromCookie(httpRequest);
+        ratingService.updateRating(request, token);
+        return ResponseEntity.ok("Rating updated successfully");
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @GetMapping("/product/{productId}")
+    public ResponseEntity<List<RatingResponseDTO>> getRatingsByProduct(@PathVariable Integer productId) {
+        return ResponseEntity.ok(ratingService.getRatingsByProductId(productId));
+    }
+
+    @PreAuthorize("hasAuthority('MANAGER') or hasAuthority('ADMIN') or hasAuthority('CUSTOMER')")
+    @GetMapping
+    public ResponseEntity<List<RatingResponseDTO>> getAllRatings() {
+        return ResponseEntity.ok(ratingService.getAllRatings());
+    }
+
+    private String extractTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("access_token".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
 }

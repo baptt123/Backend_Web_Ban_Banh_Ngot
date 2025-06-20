@@ -251,4 +251,9 @@ public class UserService {
         // Send email
         emailService.sendVerificationEmail(user, token);
     }
+    public User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
 }

@@ -59,7 +59,6 @@ public class StoreUserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
     //hàm này bị dư,đừng để ý
-    @Override
     public User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usersRepository.findByUsername(username)
