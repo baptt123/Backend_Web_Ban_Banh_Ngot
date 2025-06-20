@@ -30,4 +30,5 @@ public interface ProductRepository extends JpaRepository<Products, Integer> {
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable);
+    Optional<Products> findByProductIdAndDeletedFalse(Integer productId);
 }

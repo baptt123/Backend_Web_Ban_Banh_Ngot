@@ -1,6 +1,8 @@
 package com.example.myappbackend.repository;
 
+import com.example.myappbackend.dto.DTO.CategoryRevenueDTO;
 import com.example.myappbackend.dto.DTO.ProductRevenueDTO;
+import com.example.myappbackend.dto.DTO.RevenueStatisticsDTO;
 import com.example.myappbackend.model.OrderStatus;
 import com.example.myappbackend.model.Orders;
 import com.example.myappbackend.model.Stores;
@@ -21,31 +23,45 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     List<Orders> findByStore(Stores store);
 
     List<Orders> findByStore_StoreId(Integer storeId);
-
-    @Query("SELECT SUM(o.totalAmount), COUNT(o) FROM Orders o " +
-            "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
-            "AND o.status = :status" +
-            " AND o.store.storeId = :storeId")
-    List<Object[]> calculateRevenue(
+    @Query("SELECT NEW com.example.myappbackend.dto.RevenueStatisticsDTO(DATE(o.createdAt), SUM(o.totalAmount)) " +
+            "FROM Orders o " +
+            "WHERE o.store.storeId = :storeId " +
+            "AND o.status = 'DELIVERED' " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "AND o.deleted = false " +
+            "GROUP BY DATE(o.createdAt) " +
+            "ORDER BY DATE(o.createdAt)")
+    List<RevenueStatisticsDTO> getRevenueStatistics(
+            @Param("storeId") Integer storeId,
             @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("status") OrderStatus status,
-            @Param("storeId") Integer storeId
+            @Param("endDate") LocalDateTime endDate
     );
 
-    @Query("SELECT new com.example.myappbackend.dto.DTO.ProductRevenueDTO(p.productId, p.name, SUM(od.price * od.quantity), SUM(od.quantity)) " +
-            "FROM Orders o " +
-            "JOIN o.orderDetails od " +
+    @Query("SELECT NEW com.example.myappbackend.dto.CategoryRevenueDTO(" +
+            "p.category.name, SUM(od.price * od.quantity), " +
+            "(SUM(od.price * od.quantity) * 100.0 / (" +
+            "    SELECT SUM(od2.price * od2.quantity) " +
+            "    FROM OrderDetails od2 " +
+            "    JOIN od2.order o2 " +
+            "    WHERE o2.store.storeId = :storeId " +
+            "    AND YEAR(o2.createdAt) = :year " +
+            "    AND MONTH(o2.createdAt) = :month " +
+            "    AND o2.status = 'DELIVERED' " +
+            "    AND o2.deleted = false" +
+            "))) " +
+            "FROM OrderDetails od " +
+            "JOIN od.order o " +
             "JOIN od.product p " +
-            "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
-            "AND o.status = :status " +
-            "AND o.store.storeId = :storeId " +
-            "GROUP BY p.productId, p.name")
-    List<ProductRevenueDTO> getRevenueByProducts(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
-            @Param("status") OrderStatus status,
-            @Param("storeId") Integer storeId
+            "WHERE o.store.storeId = :storeId " +
+            "AND YEAR(o.createdAt) = :year " +
+            "AND MONTH(o.createdAt) = :month " +
+            "AND o.status = 'DELIVERED' " +
+            "AND o.deleted = false " +
+            "GROUP BY p.category.name")
+    List<CategoryRevenueDTO> getCategoryRevenue(
+            @Param("storeId") Integer storeId,
+            @Param("year") int year,
+            @Param("month") int month
     );
 
 
