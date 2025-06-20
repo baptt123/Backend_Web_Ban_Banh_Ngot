@@ -19,7 +19,7 @@ public class StoreControlller {
 
     private final StoreProductService storeProductService;
 
-     @GetMapping
+     @GetMapping("/all")
     public ResponseEntity<List<StoreResponse>> getAllStores() {
         List<StoreResponse> stores = storeProductService.getAllStores();
         return ResponseEntity.ok(stores);

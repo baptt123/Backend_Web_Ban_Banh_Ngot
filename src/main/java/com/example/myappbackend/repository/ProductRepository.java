@@ -14,9 +14,8 @@ import java.util.Optional;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Products, Integer> {
-    List<Products> findByStore_StoreId(Integer storeId);
     List<Products> findByStore_StoreIdAndDeletedFalse(Integer storeId);
-    Optional<Products> findByProductIdAndStore_StoreId(Integer productId, Integer storeId);
+//    Optional<Products> findByProductIdAndStore_StoreId(Integer productId, Integer storeId);
     @Query("SELECT p FROM Products p " +
             "JOIN p.category c " +
             "WHERE c.deleted = 0 " +
@@ -30,5 +29,20 @@ public interface ProductRepository extends JpaRepository<Products, Integer> {
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
             Pageable pageable);
-    Optional<Products> findByProductIdAndDeletedFalse(Integer productId);
+//    Optional<Products> findByProductIdAndDeletedFalse(Integer productId);
+    Optional<Products> findByProductIdAndStore_StoreId(Integer productId, Integer storeId);
+
+
+/*
+Hàm xử lí cho giỏ hàng
+ */
+    List<Products> findByNameContainingIgnoreCase(String name);
+
+    List<Products> findByCategory_CategoryId(Integer categoryId);
+
+    List<Products> findByStore_StoreId(Integer storeId);
+
+    List<Products> findByNameContainingIgnoreCaseAndStore_StoreId(String name, Integer storeId);
+
+    List<Products> findByNameContainingIgnoreCaseAndCategory_CategoryId(String name, Integer categoryId);
 }

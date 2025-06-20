@@ -1,8 +1,13 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.model.User;
+import com.example.myappbackend.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -26,7 +32,8 @@ public class JwtService {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
-
+    @Autowired
+    private UserRepository userRepository;
     public String generateToken(UserDetails userDetails) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         List<String> roles = authorities.stream()
@@ -77,5 +84,23 @@ public class JwtService {
 //
 //        return username.equals(userDetails.getUsername());
 //    }
-
+private String extractJwtFromCookies(HttpServletRequest request) {
+    if (request.getCookies() == null) return null;
+    for (Cookie cookie : request.getCookies()) {
+        if ("access_token".equals(cookie.getName())) {
+            return cookie.getValue();
+        }
+    }
+    return null;
+}
+    public User getUserFromRequest(HttpServletRequest request) {
+        String token = Arrays.stream(request.getCookies())
+                .filter(c -> c.getName().equals("access_token"))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElseThrow(() -> new RuntimeException("Token not found"));
+        String username = extractUsername(token);
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 }
