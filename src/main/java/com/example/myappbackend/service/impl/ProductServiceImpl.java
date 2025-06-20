@@ -1,5 +1,6 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.dto.response.ProductDetailsResponse;
 import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.Products;
@@ -79,6 +80,23 @@ public class ProductServiceImpl implements ProductService {
                                              BigDecimal minPrice, BigDecimal maxPrice,Pageable pageable) {
         Page<Products> products = productRepository.findProductsWithFilters(storeId, categoryId, minPrice, maxPrice, pageable);
         return products.map(this::convertToDto);
+    }
+
+    @Override
+    public ProductDetailsResponse getProductDetail(Integer productId) {
+        Products product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        ProductDetailsResponse response = new ProductDetailsResponse();
+        response.setProductId(product.getProductId());
+        response.setName(product.getName());
+        response.setDescription(product.getDescription());
+        response.setPrice(product.getPrice());
+        response.setImageUrl(product.getImageUrl());
+        response.setCategoryName(product.getCategory().getName());
+        response.setStoreName(product.getStore() != null ? product.getStore().getName() : "N/A");
+
+        return response;
     }
 
     // Convert entity -> DTO

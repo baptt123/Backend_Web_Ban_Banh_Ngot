@@ -1,5 +1,6 @@
 package com.example.myappbackend.service.interfaceservice;
 
+import com.example.myappbackend.dto.response.ProductDetailsResponse;
 import com.example.myappbackend.dto.response.ProductResponse;
 import com.example.myappbackend.model.Products;
 import org.springframework.data.domain.Page;
@@ -16,4 +17,5 @@ public interface ProductService {
     List<ProductResponse> getAllProducts();
     Page<ProductResponse> getProducts(Integer storeId, Integer categoryId,
                                       BigDecimal minPrice, BigDecimal maxPrice,Pageable pageable);
+    ProductDetailsResponse getProductDetail(Integer productId);
 }
