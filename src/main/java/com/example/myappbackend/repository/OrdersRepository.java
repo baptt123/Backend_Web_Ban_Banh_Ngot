@@ -23,7 +23,7 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     List<Orders> findByStore(Stores store);
 
     List<Orders> findByStore_StoreId(Integer storeId);
-    @Query("SELECT NEW com.example.myappbackend.dto.RevenueStatisticsDTO(DATE(o.createdAt), SUM(o.totalAmount)) " +
+    @Query("SELECT NEW com.example.myappbackend.dto.DTO.RevenueStatisticsDTO(DATE(o.createdAt), SUM(o.totalAmount)) " +
             "FROM Orders o " +
             "WHERE o.store.storeId = :storeId " +
             "AND o.status = 'DELIVERED' " +
@@ -37,8 +37,9 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
             @Param("endDate") LocalDateTime endDate
     );
 
-    @Query("SELECT NEW com.example.myappbackend.dto.CategoryRevenueDTO(" +
-            "p.category.name, SUM(od.price * od.quantity), " +
+    @Query("SELECT NEW com.example.myappbackend.dto.DTO.CategoryRevenueDTO(" +
+            "p.category.name, " +
+            "SUM(od.price * od.quantity), " +
             "(SUM(od.price * od.quantity) * 100.0 / (" +
             "    SELECT SUM(od2.price * od2.quantity) " +
             "    FROM OrderDetails od2 " +
@@ -48,7 +49,8 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
             "    AND MONTH(o2.createdAt) = :month " +
             "    AND o2.status = 'DELIVERED' " +
             "    AND o2.deleted = false" +
-            "))) " +
+            "))" +
+            ") " +
             "FROM OrderDetails od " +
             "JOIN od.order o " +
             "JOIN od.product p " +
