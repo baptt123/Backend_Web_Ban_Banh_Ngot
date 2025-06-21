@@ -1,5 +1,5 @@
 // Controller
-package com.example.myappbackend.ordercontroller;
+package com.example.myappbackend.controller.ordercontroller;
 
 import com.example.myappbackend.dto.orderDTO.OrderRequest;
 import com.example.myappbackend.service.impl.JwtService;
