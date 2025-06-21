@@ -82,9 +82,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 // Example role check api
-                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/admin/**").authenticated()
                                 .requestMatchers("/api/comments/**").permitAll()
-                                .requestMatchers("/api/ratings/**").permitAll()
+                                .requestMatchers("/api/ratings/**").authenticated()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").authenticated()
                                 .requestMatchers("/api/store/**").authenticated()
