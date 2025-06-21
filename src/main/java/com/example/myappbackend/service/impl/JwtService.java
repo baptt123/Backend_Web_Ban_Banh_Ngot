@@ -1,5 +1,6 @@
 package com.example.myappbackend.service.impl;
 
+import com.example.myappbackend.exception.ResourceNotFoundException;
 import com.example.myappbackend.model.User;
 import com.example.myappbackend.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -34,6 +35,7 @@ public class JwtService {
     private long jwtExpiration;
     @Autowired
     private UserRepository userRepository;
+
     public String generateToken(UserDetails userDetails) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         List<String> roles = authorities.stream()
@@ -74,7 +76,7 @@ public class JwtService {
         return true;
     }
 
-//    public boolean validateToken(String token, UserDetails userDetails) {
+    //    public boolean validateToken(String token, UserDetails userDetails) {
 //        String username = Jwts.parserBuilder()
 //                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
 //                .build()
@@ -84,23 +86,52 @@ public class JwtService {
 //
 //        return username.equals(userDetails.getUsername());
 //    }
-private String extractJwtFromCookies(HttpServletRequest request) {
-    if (request.getCookies() == null) return null;
-    for (Cookie cookie : request.getCookies()) {
-        if ("access_token".equals(cookie.getName())) {
-            return cookie.getValue();
-        }
-    }
-    return null;
-}
-    public User getUserFromRequest(HttpServletRequest request) {
-        String token = Arrays.stream(request.getCookies())
-                .filter(c -> c.getName().equals("access_token"))
-                .findFirst()
-                .map(Cookie::getValue)
-                .orElseThrow(() -> new RuntimeException("Token not found"));
-        String username = extractUsername(token);
+//    private String extractJwtFromCookies(HttpServletRequest request) {
+//        if (request.getCookies() == null) return null;
+//        for (Cookie cookie : request.getCookies()) {
+//            if ("access_token".equals(cookie.getName())) {
+//                return cookie.getValue();
+//            }
+//        }
+//        return null;
+//    }
+
+//    public User getUserFromRequest(HttpServletRequest request) {
+//        String token = Arrays.stream(request.getCookies())
+//                .filter(c -> c.getName().equals("access_token"))
+//                .findFirst()
+//                .map(Cookie::getValue)
+//                .orElseThrow(() -> new RuntimeException("Token not found"));
+//        String username = extractUsername(token);
+//        return userRepository.findByUsername(username)
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//    }
+
+    public int extractUserId(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String username = claims.getSubject();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tồn tại"))
+                .getUserId();
+    }
+
+
+
+
+    //cho phần đặt hàng
+    public String getTokenFromCookies(HttpServletRequest request) {
+        if (request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(c -> c.getName().equals("access_token"))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+        return null;
     }
 }
