@@ -92,6 +92,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/complaints/**").permitAll()
                                 .requestMatchers("/api/categories/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
+                                .requestMatchers("/api/orders-handle/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

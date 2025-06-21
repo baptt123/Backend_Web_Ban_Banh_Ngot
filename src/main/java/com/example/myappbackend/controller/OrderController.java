@@ -36,18 +36,23 @@ public class OrderController {
     private UserRepository userRepository;
     @Autowired
     private StoreRepository storeRepository;
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
-    @PostMapping("/place-order")
-    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
-        try {
-            OrderResponse response = orderService.placeOrder(request);
-            return ResponseEntity.ok(response);
-        } catch (OrderNotCreateException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi: " + ex.getMessage());
-        }
-    }
+
+
+//    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MANAGER') or hasAuthority('CUSTOMER')")
+//    @PostMapping("/place-order")
+//    public ResponseEntity<?> placeOrder(@RequestBody OrderRequest request) {
+//        try {
+//            OrderResponse response = orderService.placeOrder(request);
+//            return ResponseEntity.ok(response);
+//        } catch (OrderNotCreateException ex) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+//        } catch (Exception ex) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã xảy ra lỗi: " + ex.getMessage());
+//        }
+//    }
+
+
+
     @PreAuthorize("hasAuthority('MANAGER')")
     @GetMapping("/getallordersbystore")
     public ResponseEntity<List<OrderResponseDTO>> getAllOrders(HttpServletRequest request) {
