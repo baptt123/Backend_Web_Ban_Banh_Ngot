@@ -190,16 +190,33 @@ public class AuthController {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
     }
-    //tự động đăng nhập ở frontend bằng jwt
+//    //tự động đăng nhập ở frontend bằng jwt
+//    @GetMapping("/me")
+//    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+//        }
+//
+//        User user = (User) authentication.getPrincipal(); // hoặc lấy từ SecurityContextHolder
+//        UserDTO userDTO = userService.convertToDTO(user);
+//
+//        return ResponseEntity.ok(userDTO);
+//    }
+
+    /**
+     * Lấy thông tin người dùng hiện tại từ Authentication
+     *
+     * @param authentication Authentication chứa thông tin người dùng đã đăng nhập
+     * @return Thông tin người dùng dưới dạng UserDTO hoặc lỗi nếu không tìm thấy người dùng
+     */
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Chưa đăng nhập");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
-
-        User user = (User) authentication.getPrincipal(); // hoặc lấy từ SecurityContextHolder
-        UserDTO userDTO = userService.convertToDTO(user);
-
-        return ResponseEntity.ok(userDTO);
+        String username = authentication.getName();
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return ResponseEntity.ok(userService.convertToDTO(user));
     }
 }
