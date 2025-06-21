@@ -134,4 +134,20 @@ public class JwtService {
         }
         return null;
     }
+    public User extractUserFromToken(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            String username = claims.getSubject();  // "sub" chứa username
+            return userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng: " + username));
+        } catch (Exception e) {
+            throw new RuntimeException("Không thể phân tích JWT: " + e.getMessage());
+        }
+    }
+
 }

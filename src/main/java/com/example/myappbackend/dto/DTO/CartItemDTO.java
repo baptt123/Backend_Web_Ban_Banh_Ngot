@@ -7,4 +7,5 @@ public class CartItemDTO {
     private Integer productId;
     private Integer storeId;
     private Integer quantity;
+    private String customization;
 }

@@ -86,7 +86,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/comments/**").permitAll()
                                 .requestMatchers("/api/ratings/**").permitAll()
                                 .requestMatchers("/api/products/**").permitAll()
-                                .requestMatchers("/api/paypal/**").permitAll()
+                                .requestMatchers("/api/paypal/**").authenticated()
                                 .requestMatchers("/api/store/**").authenticated()
                                 .requestMatchers("/api/orders/**").permitAll()
                                 .requestMatchers("/api/complaints/**").permitAll()
