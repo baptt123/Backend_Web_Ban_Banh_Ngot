@@ -84,15 +84,16 @@ public class SecurityConfig {
                                 // Example role check api
                                 .requestMatchers("/api/admin/**").authenticated()
                                 .requestMatchers("/api/comments/**").permitAll()
-                                .requestMatchers("/api/ratings/**").authenticated()
+                                .requestMatchers("/api/rating/**").authenticated()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").authenticated()
                                 .requestMatchers("/api/store/**").authenticated()
-                                .requestMatchers("/api/orders/**").permitAll()
+                                .requestMatchers("/api/orders/**").authenticated()
                                 .requestMatchers("/api/complaints/**").permitAll()
                                 .requestMatchers("/api/categories/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/api/orders-handle/**").authenticated()
+                                .requestMatchers("/api/statistics/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

@@ -11,6 +11,7 @@ import com.example.myappbackend.repository.RatingRepository;
 import com.example.myappbackend.service.impl.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@ComponentScan(basePackages = "com.example.myappbackend")
 public class RatingsService {
     private final RatingRepository ratingsRepository;
     private final ProductRepository productsRepository;

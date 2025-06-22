@@ -6,6 +6,7 @@ import com.example.myappbackend.model.User;
 import com.example.myappbackend.service.impl.JwtService;
 import com.example.myappbackend.service.ratingservice.RatingsService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,18 +16,16 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/ratings")
+@RequestMapping("/api/rating")
 @CrossOrigin({"http://localhost:3000", "http://localhost:5173"})
+@AllArgsConstructor
 public class RatingHandlingController {
     @Autowired
     private final RatingsService ratingsService;
     @Autowired
     private final JwtService jwtService;
 
-    public RatingHandlingController(RatingsService ratingsService, JwtService jwtService) {
-        this.ratingsService = ratingsService;
-        this.jwtService = jwtService;
-    }
+
     @PreAuthorize("hasAuthority('CUSTOMER') or hasAuthority('ADMIN') or hasAuthority('MANAGER')")
     @PostMapping
     public ResponseEntity<String> addRating(@RequestBody RatingsRequestDTO dto, HttpServletRequest request) {
