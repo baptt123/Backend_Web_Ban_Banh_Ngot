@@ -94,6 +94,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/api/orders-handle/**").authenticated()
                                 .requestMatchers("/api/statistics/**").authenticated()
+                                .requestMatchers("/api/list-store/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
