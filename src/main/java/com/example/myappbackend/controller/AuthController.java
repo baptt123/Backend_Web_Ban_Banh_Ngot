@@ -136,6 +136,14 @@ public class AuthController {
         try {
             User user = googleAuthService.processGoogleLogin(request.getToken());
 
+            if (!user.isActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(
+                                "message", "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email để xác thực tài khoản.",
+                                "errorCode", "ACCOUNT_NOT_ACTIVATED"
+                        ));
+            }
+
             UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
             String token = jwtService.generateToken(userDetails);
 
@@ -180,15 +188,23 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam(name = "email") String email) {
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "message", "Email không được để trống",
+                            "errorCode", "EMAIL_REQUIRED"
+                    ));
+        }
         userService.createPasswordResetToken(email);
-        return ResponseEntity.ok("Email đặt lại mật khẩu đã được gửi.");
+        return ResponseEntity.ok(Map.of("message", "Email đặt lại mật khẩu đã được gửi."));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.ok("Mật khẩu đã được thay đổi thành công.");
+        return ResponseEntity.ok(Map.of("message","Mật khẩu đã được thay đổi thành công."));
     }
 //    //tự động đăng nhập ở frontend bằng jwt
 //    @GetMapping("/me")
