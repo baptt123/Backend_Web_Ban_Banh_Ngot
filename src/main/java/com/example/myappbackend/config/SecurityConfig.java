@@ -84,7 +84,7 @@ public class SecurityConfig {
                                 // Example role check api
                                 .requestMatchers("/api/admin/**").authenticated()
                                 .requestMatchers("/api/comments/**").permitAll()
-                                .requestMatchers("/api/ratings/**").authenticated()
+                                .requestMatchers("/api/rating/**").authenticated()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").authenticated()
                                 .requestMatchers("/api/store/**").authenticated()
