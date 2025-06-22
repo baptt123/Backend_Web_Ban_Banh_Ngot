@@ -12,4 +12,5 @@ public interface StoreProductService {
     ProductResponse updateProduct(Integer productId, ProductRequest request);
     void deleteProduct(Integer productId);
     List<StoreResponse> getAllStores();
+    String getStoreNameById(Integer storeId);
 }

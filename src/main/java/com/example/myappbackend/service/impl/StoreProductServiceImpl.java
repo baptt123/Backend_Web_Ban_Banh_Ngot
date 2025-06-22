@@ -36,7 +36,7 @@ public class StoreProductServiceImpl implements StoreProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
-        product.setStock(request.getQuantity());
+        product.setStock(request.getStock());
         product.setImageUrl(request.getImageUrl());
         product.setCategory(categoriesRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found")));
@@ -54,7 +54,7 @@ public class StoreProductServiceImpl implements StoreProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setPrice(request.getPrice());
-        product.setStock(request.getQuantity());
+        product.setStock(request.getStock());
         product.setImageUrl(request.getImageUrl());
         product.setCategory(categoriesRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found")));
@@ -81,6 +81,13 @@ public class StoreProductServiceImpl implements StoreProductService {
             response.setPhone(store.getPhone());
             return response;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public String getStoreNameById(Integer storeId) {
+        return storeRepository.findById(storeId)
+                .map(Stores::getName)
+                .orElse("Không tìm thấy cửa hàng");
     }
 
     private ProductResponse mapToResponse(Products product) {

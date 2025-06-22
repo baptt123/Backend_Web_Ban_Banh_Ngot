@@ -3,9 +3,13 @@ package com.example.myappbackend.controller;
 import com.example.myappbackend.dto.DTO.CategoryWithImageDTO;
 import com.example.myappbackend.dto.DTO.ProductDetailDTO;
 import com.example.myappbackend.dto.DTO.StoreShortDTO;
+import com.example.myappbackend.dto.request.ProductRequest;
 import com.example.myappbackend.dto.response.ProductDetailsResponse;
 import com.example.myappbackend.dto.response.ProductResponse;
+import com.example.myappbackend.model.Category;
 import com.example.myappbackend.model.Products;
+import com.example.myappbackend.model.Stores;
+import com.example.myappbackend.repository.CategoriesRepository;
 import com.example.myappbackend.repository.ProductRepository;
 import com.example.myappbackend.repository.StoreRepository;
 import com.example.myappbackend.service.interfaceservice.CategoriesService;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -34,18 +39,25 @@ public class ProductController {
     private StoreRepository storeRepository;
     @Autowired
     private CategoriesService categoriesService;
+    @Autowired
+    private CategoriesRepository categoriesRepository;
 
-    @PostMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
-    public ResponseEntity<?> createProduct() {
-        // To do...
-        return ResponseEntity.ok("Sản phẩm đã được tạo");
+    @PostMapping("/create")
+//    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    public ResponseEntity<?> createProduct(@RequestBody ProductRequest request) {
+        try {
+            ProductResponse created = productService.createProduct(request);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body("Tạo sản phẩm thất bại: " + e.getMessage());
+        }
     }
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteProduct() {
-        // To do...
+
+    @DeleteMapping("/delete/{id}")
+//    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteProduct(@PathVariable Integer id) {
+        productService.deleteProduct(id);
         return ResponseEntity.ok("Sản phẩm đã được xóa");
     }
 
@@ -61,7 +73,8 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(defaultValue = "0") int page,       // trang hiện tại (bắt đầu từ 0)
-            @RequestParam(defaultValue = "12") int size
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "false") boolean deleted
     ) {
         Pageable pageable = PageRequest.of(page, size);
         return productService.getProducts(storeId, categoryId, minPrice, maxPrice, pageable);

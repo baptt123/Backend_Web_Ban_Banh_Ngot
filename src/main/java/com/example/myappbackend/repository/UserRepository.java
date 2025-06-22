@@ -18,6 +18,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+    List<User> findByDeleted(int deleted);
     Optional<User> findByGoogleId(String googleId);
 
     Optional<User> findByUsername(String username);

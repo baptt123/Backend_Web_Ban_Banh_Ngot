@@ -22,4 +22,5 @@ public interface CategoriesRepository extends JpaRepository<Category, Integer> {
             "WHERE c.deleted = 0 " +
             "GROUP BY c.categoryId, c.name")
     List<CategoryWithImageDTO> findCategoriesWithOneProductImage();
+    List<Category> findByDeleted(int deleted);
 }

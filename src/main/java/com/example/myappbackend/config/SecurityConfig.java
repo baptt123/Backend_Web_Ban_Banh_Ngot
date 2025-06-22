@@ -83,11 +83,15 @@ public class SecurityConfig {
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 // Example role check api
                                 .requestMatchers("/api/admin/**").authenticated()
+                                .requestMatchers("/api/upload").permitAll()
+                                .requestMatchers("/api/users").permitAll()
+                                .requestMatchers("/api/users/**").permitAll()
+                                .requestMatchers("/api/roles/**").permitAll()
                                 .requestMatchers("/api/comments/**").permitAll()
                                 .requestMatchers("/api/ratings/**").authenticated()
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").authenticated()
-                                .requestMatchers("/api/store/**").authenticated()
+                                .requestMatchers("/api/store/**").permitAll()
                                 .requestMatchers("/api/orders/**").permitAll()
                                 .requestMatchers("/api/complaints/**").permitAll()
                                 .requestMatchers("/api/categories/**").permitAll()
@@ -121,4 +125,5 @@ public class SecurityConfig {
         return source;
 
     }
+
 }

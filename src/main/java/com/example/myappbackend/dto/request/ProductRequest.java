@@ -9,8 +9,9 @@ public class ProductRequest {
     private String name;
     private String description;
     private BigDecimal price;
-    private Integer quantity;
+    private Integer stock;
     private Integer categoryId;
+    private Integer storeId;
     private String imageUrl;
     private boolean deleted;
 }

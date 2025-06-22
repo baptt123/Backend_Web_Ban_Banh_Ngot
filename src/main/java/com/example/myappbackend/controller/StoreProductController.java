@@ -73,7 +73,7 @@ public class StoreProductController {
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setDescription(request.getDescription());
-        product.setStock(request.getQuantity());
+        product.setStock(request.getStock());
         product.setImageUrl(request.getImageUrl());
         product.setStore(store);
         Category category = categoryRepository.findById(request.getCategoryId())

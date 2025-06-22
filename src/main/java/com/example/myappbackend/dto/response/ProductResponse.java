@@ -18,5 +18,8 @@ public class ProductResponse {
     private Integer stock;
     private String imageUrl;
     private String categoryName;
+    private Integer categoryId; // ← thêm dòng này nếu muốn
+    private Integer storeId;    // ← thêm dòng này
+    private String storeName;
     private int deleted;
 }
