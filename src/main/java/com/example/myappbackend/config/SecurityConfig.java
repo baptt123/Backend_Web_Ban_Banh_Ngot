@@ -88,11 +88,12 @@ public class SecurityConfig {
                                 .requestMatchers("/api/products/**").permitAll()
                                 .requestMatchers("/api/paypal/**").authenticated()
                                 .requestMatchers("/api/store/**").authenticated()
-                                .requestMatchers("/api/orders/**").permitAll()
+                                .requestMatchers("/api/orders/**").authenticated()
                                 .requestMatchers("/api/complaints/**").permitAll()
                                 .requestMatchers("/api/categories/**").permitAll()
                                 .requestMatchers("/api/cart/**").authenticated()
                                 .requestMatchers("/api/orders-handle/**").authenticated()
+                                .requestMatchers("/api/statistics/**").authenticated()
                                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->

@@ -23,48 +23,38 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
     List<Orders> findByStore(Stores store);
 
     List<Orders> findByStore_StoreId(Integer storeId);
-    @Query("SELECT NEW com.example.myappbackend.dto.DTO.RevenueStatisticsDTO(DATE(o.createdAt), SUM(o.totalAmount)) " +
-            "FROM Orders o " +
-            "WHERE o.store.storeId = :storeId " +
-            "AND o.status = 'DELIVERED' " +
-            "AND o.createdAt BETWEEN :startDate AND :endDate " +
-            "AND o.deleted = false " +
-            "GROUP BY DATE(o.createdAt) " +
-            "ORDER BY DATE(o.createdAt)")
-    List<RevenueStatisticsDTO> getRevenueStatistics(
+
+    @Query(value = """
+    SELECT DATE(o.created_at) AS date, SUM(o.total_amount) AS revenue
+    FROM orders o
+    WHERE o.store_id = :storeId
+      AND o.created_at BETWEEN :startDate AND :endDate
+      AND o.status IN ('CONFIRMED', 'SHIPPED', 'DELIVERED')
+      AND o.deleted = 0
+    GROUP BY DATE(o.created_at)
+    ORDER BY DATE(o.created_at)
+""", nativeQuery = true)
+    List<Object[]> findRevenueByStoreAndDateRange(
             @Param("storeId") Integer storeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
     );
 
-    @Query("SELECT NEW com.example.myappbackend.dto.DTO.CategoryRevenueDTO(" +
-            "p.category.name, " +
-            "SUM(od.price * od.quantity), " +
-            "(SUM(od.price * od.quantity) * 100.0 / (" +
-            "    SELECT SUM(od2.price * od2.quantity) " +
-            "    FROM OrderDetails od2 " +
-            "    JOIN od2.order o2 " +
-            "    WHERE o2.store.storeId = :storeId " +
-            "    AND YEAR(o2.createdAt) = :year " +
-            "    AND MONTH(o2.createdAt) = :month " +
-            "    AND o2.status = 'DELIVERED' " +
-            "    AND o2.deleted = false" +
-            "))" +
-            ") " +
-            "FROM OrderDetails od " +
-            "JOIN od.order o " +
+
+
+    @Query("SELECT c.name, SUM(od.price * od.quantity) as revenue " +
+            "FROM Orders o " +
+            "JOIN o.orderDetails od " +
             "JOIN od.product p " +
-            "WHERE o.store.storeId = :storeId " +
-            "AND YEAR(o.createdAt) = :year " +
-            "AND MONTH(o.createdAt) = :month " +
+            "JOIN p.category c " +
+            "WHERE o.store.storeId= :storeId " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
             "AND o.status = 'DELIVERED' " +
-            "AND o.deleted = false " +
-            "GROUP BY p.category.name")
-    List<CategoryRevenueDTO> getCategoryRevenue(
-            @Param("storeId") Integer storeId,
-            @Param("year") int year,
-            @Param("month") int month
-    );
+            "AND c.deleted = 0 " +
+            "GROUP BY c.name")
+    List<Object[]> findRevenueByCategoryForMonth(@Param("storeId") Integer storeId,
+                                                 @Param("startDate") LocalDate startDate,
+                                                 @Param("endDate") LocalDate endDate);
 
 
     // --- Thêm phương thức này để tìm đơn hàng theo PayPal Order ID ---
